@@ -5,6 +5,7 @@ const danmakuFontScales = [
   1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75,
   3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0,
 ];
+const danmakuRowsOptions = [1, 2, 3, 4, 5, 6];
 
 enum TelevisionDecoder { optimized, hardware, software }
 
@@ -18,6 +19,7 @@ class PlaybackPreferences {
     this.enhancement = const VideoEnhancementPreferences(),
     this.televisionDecoder = TelevisionDecoder.optimized,
     this.danmakuFontScale = 1,
+    this.danmakuRows = 4,
   });
 
   final double speed;
@@ -28,6 +30,7 @@ class PlaybackPreferences {
   final VideoEnhancementPreferences enhancement;
   final TelevisionDecoder televisionDecoder;
   final double danmakuFontScale;
+  final int danmakuRows;
 
   PlaybackPreferences copyWith({
     double? speed,
@@ -38,6 +41,7 @@ class PlaybackPreferences {
     VideoEnhancementPreferences? enhancement,
     TelevisionDecoder? televisionDecoder,
     double? danmakuFontScale,
+    int? danmakuRows,
   }) => PlaybackPreferences(
     speed: speed ?? this.speed,
     quality: quality ?? this.quality,
@@ -47,6 +51,7 @@ class PlaybackPreferences {
     enhancement: enhancement ?? this.enhancement,
     televisionDecoder: televisionDecoder ?? this.televisionDecoder,
     danmakuFontScale: danmakuFontScale ?? this.danmakuFontScale,
+    danmakuRows: danmakuRows ?? this.danmakuRows,
   );
 
   Map<String, dynamic> toJson() => {
@@ -58,6 +63,7 @@ class PlaybackPreferences {
     'enhancement': enhancement.toJson(),
     'televisionDecoder': televisionDecoder.name,
     'danmakuFontScale': danmakuFontScale,
+    'danmakuRows': danmakuRows,
   };
 
   factory PlaybackPreferences.fromJson(Map<String, dynamic> value) {
@@ -68,10 +74,12 @@ class PlaybackPreferences {
     final preload = value['preload'] as bool? ?? true;
     final danmakuFontScale =
         (value['danmakuFontScale'] as num? ?? 1).toDouble();
+    final danmakuRows = value['danmakuRows'] as int? ?? 4;
     if (!playbackSpeeds.contains(speed) ||
         quality < 0 ||
         quality > 4320 ||
-        !danmakuFontScales.contains(danmakuFontScale)) {
+        !danmakuFontScales.contains(danmakuFontScale) ||
+        !danmakuRowsOptions.contains(danmakuRows)) {
       throw const FormatException('播放偏好无效');
     }
     return PlaybackPreferences(
@@ -85,6 +93,7 @@ class PlaybackPreferences {
           TelevisionDecoder.values.asNameMap()[value['televisionDecoder']] ??
           TelevisionDecoder.optimized,
       danmakuFontScale: danmakuFontScale,
+      danmakuRows: danmakuRows,
     );
   }
 }

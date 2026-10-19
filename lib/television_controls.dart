@@ -548,6 +548,7 @@ class TelevisionPlaybackSetting {
     this.decoder,
     this.compatibleRendering,
     this.danmakuFontScale,
+    this.danmakuRows,
   });
   final double? speed;
   final int? quality;
@@ -558,6 +559,7 @@ class TelevisionPlaybackSetting {
   final TelevisionDecoder? decoder;
   final bool? compatibleRendering;
   final double? danmakuFontScale;
+  final int? danmakuRows;
 }
 
 class TelevisionSettingsDialog extends StatelessWidget {
@@ -580,6 +582,7 @@ class TelevisionSettingsDialog extends StatelessWidget {
     this.decoder,
     this.compatibleRendering,
     this.danmakuFontScale = 1,
+    this.danmakuRows = 4,
   });
   final double speed;
   final int quality;
@@ -598,6 +601,7 @@ class TelevisionSettingsDialog extends StatelessWidget {
   final TelevisionDecoder? decoder;
   final bool? compatibleRendering;
   final double danmakuFontScale;
+  final int danmakuRows;
 
   @override
   Widget build(BuildContext context) => AlertDialog(
@@ -739,6 +743,26 @@ class TelevisionSettingsDialog extends StatelessWidget {
                       onPressed: () => Navigator.pop(
                         context,
                         TelevisionPlaybackSetting(danmakuFontScale: value),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text('弹幕行数', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final value in danmakuRowsOptions)
+                    RemoteButton(
+                      key: ValueKey('tv-danmaku-rows-$value'),
+                      label: '$value 行',
+                      autofocus: value == danmakuRows,
+                      selected: value == danmakuRows,
+                      onPressed: () => Navigator.pop(
+                        context,
+                        TelevisionPlaybackSetting(danmakuRows: value),
                       ),
                     ),
                 ],
