@@ -75,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _revealed = _revealBatch;
   int? _revealKey;
   bool _hiddenItems = false;
+  DateTime? _lastBackPress;
 
   List<SourceGroup> get _sourceGroups {
     final groups = SourceGroup.fromSources(widget.store.sources);
@@ -411,7 +412,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _televisionBack() {
+
+  void _confirmExit() {
+    final now = DateTime.now();
+    if (_lastBackPress != null &&
+        now.difference(_lastBackPress!) < const Duration(seconds: 2)) {
+      _lastBackPress = null;
+      SystemNavigator.pop();
+      return;
+    }
+    _lastBackPress = now;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('再按一次返回键退出'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+  }
+
+  void _handleBack() {
     if (_selectionMode) {
       _cancelSelection();
     } else if (_tab != 0) {
@@ -419,6 +442,8 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (_search.text.isNotEmpty) {
       _search.clear();
       _searchChanged('');
+    } else {
+      _confirmExit();
     }
   }
 
@@ -1141,20 +1166,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
         );
-        if (!television && !_selectionMode) return scaffold;
+        if (!television && !_selectionMode) {
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, result) {
+              if (!didPop) _confirmExit();
+            },
+            child: scaffold,
+          );
+        }
         return PopScope(
-          canPop:
-              !_selectionMode &&
-              (!television || _tab == 0 && _search.text.isEmpty),
+          canPop: false,
           onPopInvokedWithResult: (didPop, result) {
-            if (!didPop) _televisionBack();
+            if (!didPop) _handleBack();
           },
           child: CallbackShortcuts(
             bindings: {
               const SingleActivator(LogicalKeyboardKey.escape): () =>
-                  Navigator.of(context).maybePop(),
+                  _handleBack(),
               const SingleActivator(LogicalKeyboardKey.goBack): () =>
-                  Navigator.of(context).maybePop(),
+                  _handleBack(),
             },
             child: scaffold,
           ),
