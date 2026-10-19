@@ -2317,7 +2317,7 @@ class _PlaybackHudState extends State<_PlaybackHud> {
         '${formatPosition(position.inMilliseconds / 1000)} / ${formatPosition(duration.inMilliseconds / 1000)}';
     final speed = _downloadKbps > 1 ? '~${_downloadKbps.round()} KB/s' : '--';
     final style = TextStyle(
-      fontSize: widget.television ? 14 : 11,
+      fontSize: (widget.television ? 14 : 11) * 1.25,
       color: Colors.white,
       fontFeatures: const [FontFeature.tabularFigures()],
       shadows: const [
