@@ -547,6 +547,7 @@ class TelevisionPlaybackSetting {
     this.enhancement,
     this.decoder,
     this.compatibleRendering,
+    this.danmakuFontScale,
   });
   final double? speed;
   final int? quality;
@@ -556,6 +557,7 @@ class TelevisionPlaybackSetting {
   final VideoEnhancementPreferences? enhancement;
   final TelevisionDecoder? decoder;
   final bool? compatibleRendering;
+  final double? danmakuFontScale;
 }
 
 class TelevisionSettingsDialog extends StatelessWidget {
@@ -577,6 +579,7 @@ class TelevisionSettingsDialog extends StatelessWidget {
     this.onCompareEnhancement,
     this.decoder,
     this.compatibleRendering,
+    this.danmakuFontScale = 1,
   });
   final double speed;
   final int quality;
@@ -594,6 +597,7 @@ class TelevisionSettingsDialog extends StatelessWidget {
   final VoidCallback? onCompareEnhancement;
   final TelevisionDecoder? decoder;
   final bool? compatibleRendering;
+  final double danmakuFontScale;
 
   @override
   Widget build(BuildContext context) => AlertDialog(
@@ -719,6 +723,26 @@ class TelevisionSettingsDialog extends StatelessWidget {
                   label: '重试弹幕',
                   onPressed: onRetryDanmaku,
                 ),
+              const SizedBox(height: 12),
+              const Text('弹幕字体大小', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final value in danmakuFontScales)
+                    RemoteButton(
+                      key: ValueKey('tv-danmaku-font-scale-$value'),
+                      label: '${value}x',
+                      autofocus: value == danmakuFontScale,
+                      selected: value == danmakuFontScale,
+                      onPressed: () => Navigator.pop(
+                        context,
+                        TelevisionPlaybackSetting(danmakuFontScale: value),
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(height: 20),
             ],
             RemoteButton(

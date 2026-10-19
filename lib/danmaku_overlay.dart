@@ -69,9 +69,11 @@ class DanmakuOverlay extends StatefulWidget {
     super.key,
     required this.controller,
     required this.aspectRatio,
+    this.fontScale = 1,
   });
   final DanmakuController controller;
   final double aspectRatio;
+  final double fontScale;
 
   @override
   State<DanmakuOverlay> createState() => _DanmakuOverlayState();
@@ -103,7 +105,7 @@ class _DanmakuOverlayState extends State<DanmakuOverlay> {
             constraints.maxHeight,
             constraints.maxWidth / aspect,
           );
-          final fontSize = width < 600 ? 16.0 : 20.0;
+          final fontSize = (width < 600 ? 16.0 : 20.0) * widget.fontScale;
           final scaler = MediaQuery.textScalerOf(context);
           final rowHeight = scaler.scale(fontSize) * 1.5;
           final rows = ((height * .55 - 8) / rowHeight).floor().clamp(0, 4);
