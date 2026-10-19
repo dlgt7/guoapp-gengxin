@@ -4,6 +4,29 @@ import 'package:flutter/material.dart';
 
 import 'danmaku_controller.dart';
 import 'danmaku_models.dart';
+import 'playback_preferences.dart';
+
+const _danmakuPalette = [
+  Color(0xFFFFFFFF),
+  Color(0xFFFF5252),
+  Color(0xFFFFEB3B),
+  Color(0xFF69F0AE),
+  Color(0xFF40C4FF),
+  Color(0xFFE040FB),
+  Color(0xFFFFAB40),
+];
+
+Color _danmakuColorFor(String id) =>
+    _danmakuPalette[(id.hashCode & 0x7FFFFFFF) % _danmakuPalette.length];
+
+const _danmakuGradient = LinearGradient(
+  colors: [
+    Color(0xFFFF6B6B),
+    Color(0xFFFFE66D),
+    Color(0xFF6BCB77),
+    Color(0xFF4D96FF),
+  ],
+);
 
 class DanmakuFlight {
   const DanmakuFlight(this.item, this.text, this.lane, this.width);
@@ -71,11 +94,13 @@ class DanmakuOverlay extends StatefulWidget {
     required this.aspectRatio,
     this.fontScale = 1,
     this.maxRows = 4,
+    this.colorMode = DanmakuColorMode.normal,
   });
   final DanmakuController controller;
   final double aspectRatio;
   final double fontScale;
   final int maxRows;
+  final DanmakuColorMode colorMode;
 
   @override
   State<DanmakuOverlay> createState() => _DanmakuOverlayState();
@@ -181,6 +206,7 @@ class _DanmakuOverlayState extends State<DanmakuOverlay> {
                                 revision: controller.motionRevision,
                                 style: style,
                                 scaler: scaler,
+                                colorMode: widget.colorMode,
                               ),
                             ),
                       ],
@@ -206,6 +232,7 @@ class _DanmakuMotion extends StatefulWidget {
     required this.revision,
     required this.style,
     required this.scaler,
+    this.colorMode = DanmakuColorMode.normal,
   });
   final DanmakuFlight flight;
   final double width;
@@ -215,6 +242,7 @@ class _DanmakuMotion extends StatefulWidget {
   final int revision;
   final TextStyle style;
   final TextScaler scaler;
+  final DanmakuColorMode colorMode;
 
   @override
   State<_DanmakuMotion> createState() => _DanmakuMotionState();
@@ -274,14 +302,7 @@ class _DanmakuMotionState extends State<_DanmakuMotion>
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _motion,
     child: RepaintBoundary(
-      child: Text(
-        widget.flight.text,
-        style: widget.style,
-        textScaler: widget.scaler,
-        textDirection: TextDirection.ltr,
-        maxLines: 1,
-        softWrap: false,
-      ),
+      child: _buildText(),
     ),
     builder: (context, child) => Transform.translate(
       key: ValueKey('danmaku-motion-${widget.flight.item.id}'),
@@ -292,4 +313,24 @@ class _DanmakuMotionState extends State<_DanmakuMotion>
       child: child,
     ),
   );
+
+  Widget _buildText() {
+    final text = Text(
+      widget.flight.text,
+      style: widget.colorMode == DanmakuColorMode.colorful
+          ? widget.style.copyWith(color: _danmakuColorFor(widget.flight.item.id))
+          : widget.style,
+      textScaler: widget.scaler,
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+      softWrap: false,
+    );
+    if (widget.colorMode == DanmakuColorMode.gradient) {
+      return ShaderMask(
+        shaderCallback: (bounds) => _danmakuGradient.createShader(bounds),
+        child: text,
+      );
+    }
+    return text;
+  }
 }

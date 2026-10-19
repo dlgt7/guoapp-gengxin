@@ -133,6 +133,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   bool _television = false;
   double _danmakuFontScale = 1;
   int _danmakuRows = 4;
+  DanmakuColorMode _danmakuColorMode = DanmakuColorMode.normal;
   TelevisionDecoder _televisionDecoder = TelevisionDecoder.optimized;
   bool get _televisionDecoderApplies => Platform.isAndroid && _television;
   AppOrientationController? _orientationController;
@@ -158,6 +159,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       televisionDecoder: _televisionDecoder,
       danmakuFontScale: _danmakuFontScale,
       danmakuRows: _danmakuRows,
+      danmakuColorMode: _danmakuColorMode,
     );
   String get _qualityLabel => _plan?.local == true
       ? '本地原画'
@@ -185,6 +187,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     _televisionDecoder = preferences.televisionDecoder;
     _danmakuFontScale = preferences.danmakuFontScale;
     _danmakuRows = preferences.danmakuRows;
+    _danmakuColorMode = preferences.danmakuColorMode;
     _loader = PlaybackLoader(widget.repository);
     _preloader = PlaybackPreloader(widget.repository);
     _danmaku = DanmakuController(widget.repository)
@@ -1304,6 +1307,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       _televisionDecoder = nextPreferences.televisionDecoder;
       _danmakuFontScale = nextPreferences.danmakuFontScale;
       _danmakuRows = nextPreferences.danmakuRows;
+      _danmakuColorMode = nextPreferences.danmakuColorMode;
     });
     _danmaku.setEnabled(_danmakuEnabled);
     _syncDanmaku();
@@ -1525,6 +1529,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               compatibleRendering: compatibleRendering,
               danmakuFontScale: _danmakuFontScale,
               danmakuRows: _danmakuRows,
+              danmakuColorMode: _danmakuColorMode,
             ),
           ),
         ),
@@ -1550,6 +1555,7 @@ class _PlayerScreenState extends State<PlayerScreen>
           televisionDecoder: selection.decoder,
           danmakuFontScale: selection.danmakuFontScale,
           danmakuRows: selection.danmakuRows,
+          danmakuColorMode: selection.danmakuColorMode,
         ),
       );
     } catch (_) {
@@ -1849,7 +1855,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       fit: StackFit.expand,
       children: [
         if (!hideOverlayForPictureInPicture)
-          DanmakuOverlay(controller: _danmaku, aspectRatio: _aspectRatio, fontScale: _danmakuFontScale, maxRows: _danmakuRows),
+          DanmakuOverlay(controller: _danmaku, aspectRatio: _aspectRatio, fontScale: _danmakuFontScale, maxRows: _danmakuRows, colorMode: _danmakuColorMode),
         controls,
       ],
     );

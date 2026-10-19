@@ -549,6 +549,7 @@ class TelevisionPlaybackSetting {
     this.compatibleRendering,
     this.danmakuFontScale,
     this.danmakuRows,
+    this.danmakuColorMode,
   });
   final double? speed;
   final int? quality;
@@ -560,6 +561,7 @@ class TelevisionPlaybackSetting {
   final bool? compatibleRendering;
   final double? danmakuFontScale;
   final int? danmakuRows;
+  final DanmakuColorMode? danmakuColorMode;
 }
 
 class TelevisionSettingsDialog extends StatelessWidget {
@@ -583,6 +585,7 @@ class TelevisionSettingsDialog extends StatelessWidget {
     this.compatibleRendering,
     this.danmakuFontScale = 1,
     this.danmakuRows = 4,
+    this.danmakuColorMode = DanmakuColorMode.normal,
   });
   final double speed;
   final int quality;
@@ -602,6 +605,7 @@ class TelevisionSettingsDialog extends StatelessWidget {
   final bool? compatibleRendering;
   final double danmakuFontScale;
   final int danmakuRows;
+  final DanmakuColorMode danmakuColorMode;
 
   @override
   Widget build(BuildContext context) => AlertDialog(
@@ -763,6 +767,30 @@ class TelevisionSettingsDialog extends StatelessWidget {
                       onPressed: () => Navigator.pop(
                         context,
                         TelevisionPlaybackSetting(danmakuRows: value),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text('弹幕颜色', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final value in DanmakuColorMode.values)
+                    RemoteButton(
+                      key: ValueKey('tv-danmaku-color-${value.name}'),
+                      label: switch (value) {
+                        DanmakuColorMode.normal => '默认',
+                        DanmakuColorMode.colorful => '彩色',
+                        DanmakuColorMode.gradient => '渐变',
+                      },
+                      autofocus: value == danmakuColorMode,
+                      selected: value == danmakuColorMode,
+                      onPressed: () => Navigator.pop(
+                        context,
+                        TelevisionPlaybackSetting(danmakuColorMode: value),
                       ),
                     ),
                 ],
