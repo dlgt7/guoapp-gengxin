@@ -222,12 +222,14 @@ class Episode {
       number = intValue(raw['currentEpisode']) > 0
           ? intValue(raw['currentEpisode'])
           : fallback,
-      vip = raw['vip'] == true;
+      vip = raw['vip'] == true,
+      vertical = raw['vertical'] as bool?;
   final Map<String, dynamic> raw;
   final String id;
   final String title;
   final int number;
   final bool vip;
+  final bool? vertical;
 }
 
 class DramaDetail {
