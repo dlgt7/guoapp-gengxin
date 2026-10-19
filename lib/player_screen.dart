@@ -1856,6 +1856,8 @@ class _PlayerScreenState extends State<PlayerScreen>
       children: [
         if (!hideOverlayForPictureInPicture)
           DanmakuOverlay(controller: _danmaku, aspectRatio: _aspectRatio, fontScale: _danmakuFontScale, maxRows: _danmakuRows, colorMode: _danmakuColorMode),
+        if (!hideOverlayForPictureInPicture)
+          _PlaybackHud(title: title, player: _player, television: _television),
         controls,
       ],
     );
@@ -2257,4 +2259,104 @@ class _PlayerScreenState extends State<PlayerScreen>
       onSelected: (index) => _play(index),
     ),
   );
+}
+
+class _PlaybackHud extends StatefulWidget {
+  const _PlaybackHud({
+    required this.title,
+    required this.player,
+    required this.television,
+  });
+  final String title;
+  final Player player;
+  final bool television;
+
+  @override
+  State<_PlaybackHud> createState() => _PlaybackHudState();
+}
+
+class _PlaybackHudState extends State<_PlaybackHud> {
+  Timer? _timer;
+  DateTime _lastSample = DateTime.now();
+  Duration _lastBuffer = Duration.zero;
+  double _downloadKbps = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now();
+      final buffer = widget.player.state.buffer;
+      final dt = now.difference(_lastSample).inMilliseconds;
+      final db = buffer.inMilliseconds - _lastBuffer.inMilliseconds;
+      if (dt > 0) {
+        final rate = db / dt;
+        final kbps = rate > 0 ? rate * 187.5 : 0;
+        _downloadKbps = _downloadKbps * 0.6 + kbps * 0.4;
+      }
+      _lastSample = now;
+      _lastBuffer = buffer;
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final position = widget.player.state.position;
+    final duration = widget.player.state.duration;
+    final time = MaterialLocalizations.of(context).formatTimeOfDay(
+      TimeOfDay.fromDateTime(DateTime.now()),
+    );
+    final progress =
+        '${formatPosition(position.inMilliseconds / 1000)} / ${formatPosition(duration.inMilliseconds / 1000)}';
+    final speed = _downloadKbps > 1 ? '~${_downloadKbps.round()} KB/s' : '--';
+    final style = TextStyle(
+      fontSize: widget.television ? 14 : 11,
+      color: Colors.white,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      shadows: const [
+        Shadow(color: Colors.black, blurRadius: 3, offset: Offset(1, 1)),
+      ],
+    );
+    final inset = widget.television ? 16.0 : 10.0;
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            top: inset,
+            left: inset,
+            right: inset * 3,
+            child: Text(
+              widget.title,
+              style: style,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Positioned(
+            top: inset,
+            right: inset,
+            child: Text(time, style: style),
+          ),
+          Positioned(
+            bottom: inset,
+            left: inset,
+            child: Text(progress, style: style),
+          ),
+          Positioned(
+            bottom: inset,
+            right: inset,
+            child: Text(speed, style: style),
+          ),
+        ],
+      ),
+    );
+  }
 }
