@@ -273,7 +273,34 @@ class _SourcesScreenState extends State<SourcesScreen> {
     );
     if (!switchedOn) {
       final closedError = _errors[source.id] ?? '';
-      return Card(
+      return _FocusableSourceCard(
+        child: Card(
+          key: PageStorageKey('source-${source.id}'),
+          margin: const EdgeInsets.only(bottom: 16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                header,
+                const SizedBox(height: 8),
+                Text(admin ? '已关闭，开启后在首页、搜索和记录中显示' : '已关闭，仅管理员可以开启'),
+                if (closedError.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      closedError,
+                      style: TextStyle(color: colors.error),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return _FocusableSourceCard(
+      child: Card(
         key: PageStorageKey('source-${source.id}'),
         margin: const EdgeInsets.only(bottom: 16),
         child: Padding(
@@ -283,31 +310,7 @@ class _SourcesScreenState extends State<SourcesScreen> {
             children: [
               header,
               const SizedBox(height: 8),
-              Text(admin ? '已关闭，开启后在首页、搜索和记录中显示' : '已关闭，仅管理员可以开启'),
-              if (closedError.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    closedError,
-                    style: TextStyle(color: colors.error),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
-    }
-    return Card(
-      key: PageStorageKey('source-${source.id}'),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            header,
-            const SizedBox(height: 8),
-            Text('最近更新：${sourceTimestamp(status?.updatedAt)}'),
+              Text('最近更新：${sourceTimestamp(status?.updatedAt)}'),
             if (status != null && status.count > 0)
               Text(
                 '已加载至第 ${status.page} 页${status.hasMore ? ' · 可继续加载' : ' · 当前分页已加载完'}',
@@ -517,6 +520,7 @@ class _SourcesScreenState extends State<SourcesScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -548,4 +552,34 @@ class SourceDiagnosticsButton extends StatelessWidget {
     icon: const Icon(Icons.network_check),
     label: const Text('站源诊断'),
   );
+}
+
+class _FocusableSourceCard extends StatefulWidget {
+  const _FocusableSourceCard({required this.child});
+  final Widget child;
+  @override
+  State<_FocusableSourceCard> createState() => _FocusableSourceCardState();
+}
+
+class _FocusableSourceCardState extends State<_FocusableSourceCard> {
+  bool _focused = false;
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Focus(
+      canRequestFocus: false,
+      onFocusChange: (f) => setState(() => _focused = f),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _focused ? colors.primary : Colors.transparent,
+            width: 3,
+          ),
+        ),
+        child: widget.child,
+      ),
+    );
+  }
 }
