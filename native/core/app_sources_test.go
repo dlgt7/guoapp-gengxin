@@ -27,8 +27,10 @@ func sourceFixtureResponse(request *http.Request, status int, body string) *http
 
 func sourceFixtureDownloader(t *testing.T, transport sourceFixtureTransport) *Downloader {
 	t.Helper()
-	return &Downloader{cfg: Config{dataDir: t.TempDir(), Retries: 1, PageSize: 30, MaxPagesPerSort: 1},
+	d := &Downloader{cfg: Config{dataDir: t.TempDir(), Retries: 1, PageSize: 30, MaxPagesPerSort: 1},
 		client: &http.Client{Transport: transport}, limiter: newRequestLimiter(3, 0), providerHosts: map[string]string{}}
+	d.hongguoClient().state.Registered = true
+	return d
 }
 
 func sourceFixtureEngine(t *testing.T, transport sourceFixtureTransport) *nativeEngine {
@@ -41,6 +43,7 @@ func sourceFixtureEngine(t *testing.T, transport sourceFixtureTransport) *native
 	engine.downloader.client.Transport = transport
 	engine.downloader.limiter = newRequestLimiter(3, 0)
 	engine.downloader.cfg.Retries = 1
+	engine.downloader.hongguoClient().state.Registered = true
 	return engine
 }
 
