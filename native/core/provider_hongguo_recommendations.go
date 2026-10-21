@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+const hongguoBookmallTabPath = "/reading/bookapi/bookmall/tab/v1/"
+
 var hongguoRecommendationFeeds = []struct {
 	key       string
 	tabType   string
@@ -147,7 +149,7 @@ func (downloader *Downloader) fetchHongguoFeedRecommendations(ctx context.Contex
 			extra.Set("session_id", page.SessionID)
 			extra.Set("client_req_type", "2")
 		}
-		result, err := downloader.hongguoAppRequest(ctx, http.MethodGet, "/reading/bookapi/bookmall/tab/v1/", extra, nil)
+		result, err := downloader.hongguoAppRequest(ctx, http.MethodGet, hongguoBookmallTabPath, extra, nil)
 		if err != nil {
 			return hongguoRecommendationPage{}, err
 		}

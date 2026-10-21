@@ -30,25 +30,28 @@ type hongguoCatalogCursor struct {
 }
 
 type hongguoCatalogState struct {
-	Version   int                             `json:"version"`
-	DeviceID  string                          `json:"deviceId"`
-	InstallID string                          `json:"installId"`
-	Feeds     map[string]hongguoCatalogCursor `json:"feeds"`
+	Version    int                             `json:"version"`
+	DeviceID   string                          `json:"deviceId"`
+	InstallID  string                          `json:"installId"`
+	Registered bool                            `json:"registered,omitempty"`
+	Feeds      map[string]hongguoCatalogCursor `json:"feeds"`
 }
 
 type hongguoAppClient struct {
-	mu             sync.Mutex
-	catalogMu      sync.Mutex
-	baseURL        string
-	state          hongguoCatalogState
-	details        map[string]hongguoDetailEntry
-	pending        map[string]*hongguoDetailCall
-	searches       map[string]hongguoSearchEntry
-	searchPending  map[string]*hongguoSearchCall
-	suggestions    map[string]hongguoSuggestionEntry
-	suggestPending map[string]*hongguoSuggestionCall
-	danmaku        map[string]hongguoDanmakuCacheEntry
-	danmakuPending map[string]*hongguoDanmakuCall
+	mu                  sync.Mutex
+	catalogMu           sync.Mutex
+	deviceMu            sync.Mutex
+	registerPausedUntil time.Time
+	baseURL             string
+	state               hongguoCatalogState
+	details             map[string]hongguoDetailEntry
+	pending             map[string]*hongguoDetailCall
+	searches            map[string]hongguoSearchEntry
+	searchPending       map[string]*hongguoSearchCall
+	suggestions         map[string]hongguoSuggestionEntry
+	suggestPending      map[string]*hongguoSuggestionCall
+	danmaku             map[string]hongguoDanmakuCacheEntry
+	danmakuPending      map[string]*hongguoDanmakuCall
 }
 
 func (downloader *Downloader) hongguoClient() *hongguoAppClient {
@@ -127,18 +130,24 @@ func hongguoCatalogHasMore(state *hongguoCatalogState) bool {
 	return false
 }
 
-func (downloader *Downloader) hongguoAppRequest(ctx context.Context, method, path string, extra url.Values, payload any) (map[string]any, error) {
-	client := downloader.hongguoClient()
-	client.mu.Lock()
-	base, deviceID, installID := client.baseURL, client.state.DeviceID, client.state.InstallID
-	client.mu.Unlock()
-	query := url.Values{
+func hongguoAppQuery(deviceID, installID string) url.Values {
+	return url.Values{
 		"aid": {"8662"}, "app_name": {"novelread"}, "version_code": {"73532"}, "version_name": {"7.3.5.32"},
 		"manifest_version_code": {"73532"}, "update_version_code": {"73532"}, "channel": {"update_64"},
 		"device_platform": {"android"}, "os": {"android"}, "ssmix": {"a"}, "device_type": {"25053RT47C"},
 		"device_brand": {"Redmi"}, "language": {"zh"}, "os_api": {"36"}, "os_version": {"16"},
 		"resolution": {"1280*2772"}, "dpi": {"520"}, "ac": {"wifi"}, "device_id": {deviceID}, "iid": {installID},
 	}
+}
+
+func (downloader *Downloader) hongguoAppRequest(ctx context.Context, method, path string, extra url.Values, payload any) (map[string]any, error) {
+	client := downloader.hongguoClient()
+	comment, _ := ctx.Value(hongguoCommentKey{}).(bool)
+	signed := !comment && path != hongguoBookmallTabPath
+	client.mu.Lock()
+	base, deviceID, installID := client.baseURL, client.state.DeviceID, client.state.InstallID
+	client.mu.Unlock()
+	query := hongguoAppQuery(deviceID, installID)
 	for key, values := range extra {
 		query[key] = append([]string(nil), values...)
 	}
@@ -174,7 +183,6 @@ func (downloader *Downloader) hongguoAppRequest(ctx context.Context, method, pat
 		request.Header.Set("Accept", "application/json")
 		request.Header.Set("X-XS-From-Web", "0")
 		request.Header.Set("Sdk-Version", "2")
-		comment, _ := ctx.Value(hongguoCommentKey{}).(bool)
 		var commentNonce hongguoCommentNonce
 		if comment {
 			commentNonce, err = newHongguoCommentNonce()
@@ -193,8 +201,8 @@ func (downloader *Downloader) hongguoAppRequest(ctx context.Context, method, pat
 			prepared.URL.RawQuery = query.Encode()
 			if comment {
 				signHongguoCommentRequest(prepared, commentNonce, now)
-			} else {
-				signHongguoPlayerRequest(prepared, body, now, installID)
+			} else if signed {
+				signHongguoPlayerRequest(prepared, body, now)
 			}
 		})
 		if err != nil {
@@ -218,7 +226,11 @@ func (downloader *Downloader) hongguoAppRequest(ctx context.Context, method, pat
 			}
 			continue
 		}
-		if len(content) == 0 || len(content) > providerMaxBodyBytes {
+		if len(content) == 0 {
+			lastErr = errors.New("红果 App 接口未返回有效数据")
+			continue
+		}
+		if len(content) > providerMaxBodyBytes {
 			return nil, errors.New("红果 App 接口未返回有效数据")
 		}
 		var result map[string]any
