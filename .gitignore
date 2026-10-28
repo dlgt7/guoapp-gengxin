@@ -10,6 +10,7 @@ android/app/src/main/jniLibs/
 windows/runner/duanju_core.dll
 windows/runner/duanju_core.h
 ios/DuanjuCore/*.xcframework/
+.wrangler/
 *.test
 *.out
 

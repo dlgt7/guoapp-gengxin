@@ -271,6 +271,9 @@ class _DetailPageState extends State<DetailPage> {
     index: index,
     position: position,
     autoplay: autoplay,
+    preopen: widget.store.playbackPreferences.preopens(
+      television: AppScope.of(context).television,
+    ),
   );
 
   void _preopen() {

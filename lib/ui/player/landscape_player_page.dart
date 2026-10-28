@@ -217,7 +217,9 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
 
   void _tapUp(TapUpDetails details, double width, bool full) {
     final x = details.localPosition.dx;
-    final side = !full && widget.onFullscreen == null
+    final side =
+        !full && widget.onFullscreen == null ||
+            !_session.store.playbackPreferences.doubleTapSeek
         ? 0
         : x < width / 4
         ? -1
@@ -430,7 +432,7 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
         SwipeControls(
           session: session,
           enabled: full,
-          levels: true,
+          levels: session.store.playbackPreferences.swipeLevels,
           child: LayoutBuilder(
             builder: (context, constraints) => GestureDetector(
               behavior: HitTestBehavior.opaque,

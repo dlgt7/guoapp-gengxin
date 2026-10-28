@@ -117,6 +117,7 @@ type nativeInput struct {
 	Session         string                  `json:"session"`
 	Sequence        int64                   `json:"sequence"`
 	Force           bool                    `json:"force"`
+	Version         string                  `json:"version"`
 }
 
 type nativeCatalogResult struct {
@@ -446,6 +447,10 @@ func nativeDispatch(input nativeInput) (any, error) {
 	case "release":
 		engine.nativeReleasePlayback(input.Session)
 		return true, nil
+	case "checkUpdate":
+		return engine.checkUpdate(ctx, input.Version)
+	case "reportUsage":
+		return true, engine.reportUsage(ctx, input.Version)
 	default:
 		return nil, errors.New("不支持的应用操作")
 	}

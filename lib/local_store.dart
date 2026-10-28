@@ -338,6 +338,9 @@ class LocalStore extends ChangeNotifier {
       ThemeColor.orange;
   bool get sideBarExpanded => preferences.getBool('sideBarExpanded') ?? true;
   bool get playerWide => preferences.getBool('playerWide') ?? false;
+  bool get checkUpdates => preferences.getBool('checkUpdates') ?? true;
+  bool get shareUsage => preferences.getBool('shareUsage') ?? true;
+  String get ignoredUpdate => preferences.getString('ignoredUpdate') ?? '';
 
   String get source {
     if (locked) return '';
@@ -501,6 +504,16 @@ class LocalStore extends ChangeNotifier {
     await preferences.setBool('playerWide', value);
     _notify();
   });
+  Future<void> setCheckUpdates(bool value) => _queue(() async {
+    await preferences.setBool('checkUpdates', value);
+    _notify();
+  });
+  Future<void> setShareUsage(bool value) => _queue(() async {
+    await preferences.setBool('shareUsage', value);
+    _notify();
+  });
+  Future<void> setIgnoredUpdate(String version) =>
+      _queue(() => preferences.setString('ignoredUpdate', version));
   Future<void> setPlaybackPreferences(PlaybackPreferences value) {
     PlaybackPreferences.fromJson(value.toJson());
     return _setting(_key('playback'), jsonEncode(value.toJson()));

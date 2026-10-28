@@ -109,6 +109,9 @@ class _DownloadedDramaPageState extends State<DownloadedDramaPage> {
       ]),
       index: index,
       position: position,
+      preopen: widget.store.playbackPreferences.preopens(
+        television: AppScope.of(context).television,
+      ),
     );
     handle.session.start(index, position: position);
     await Navigator.of(context, rootNavigator: true).push(

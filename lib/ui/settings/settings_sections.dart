@@ -12,6 +12,7 @@ import '../../playback_preferences.dart';
 import '../../resource_settings.dart';
 import '../../resource_settings_editor.dart';
 import '../app_scope.dart';
+import '../update_prompt.dart';
 import '../users/users_view.dart';
 import '../widgets/focus_ring.dart';
 import '../widgets/group_card.dart';
@@ -109,6 +110,7 @@ class SettingsSection extends StatelessWidget {
 
   List<Widget> _playback(BuildContext context) {
     final preferences = store.playbackPreferences;
+    final television = AppScope.of(context).television;
     void savePreferences(PlaybackPreferences next) =>
         saveSetting(context, () => store.setPlaybackPreferences(next));
     return [
@@ -116,7 +118,7 @@ class SettingsSection extends StatelessWidget {
         children: [
           ValueTile<double>(
             title: '默认倍速',
-            subtitle: '播放时调整倍速也会更新这里',
+            subtitle: '与播放器内设置同步',
             options: {for (final speed in playbackSpeeds) speed: '${speed}x'},
             value: preferences.speed,
             onChanged: (speed) =>
@@ -150,8 +152,34 @@ class SettingsSection extends StatelessWidget {
             ),
           ),
           if (Platform.isAndroid) const _RenderingTile(),
+          SwitchTile(
+            title: '预开下一集',
+            subtitle: '提前打开下一集的播放器，切集无需等待',
+            value: preferences.preopens(television: television),
+            onChanged: (value) =>
+                savePreferences(preferences.copyWith(preopen: value)),
+          ),
         ],
       ),
+      if ((Platform.isAndroid || Platform.isIOS) && !television)
+        SettingsCard(
+          children: [
+            SwitchTile(
+              title: '双击快退/快进',
+              subtitle: '左侧双击快退，右侧双击快进，关闭时均为暂停',
+              value: preferences.doubleTapSeek,
+              onChanged: (value) =>
+                  savePreferences(preferences.copyWith(doubleTapSeek: value)),
+            ),
+            SwitchTile(
+              title: '滑动调节亮度/音量',
+              subtitle: '左侧上下滑动调整亮度，右侧上下滑动调整音量',
+              value: preferences.swipeLevels,
+              onChanged: (value) =>
+                  savePreferences(preferences.copyWith(swipeLevels: value)),
+            ),
+          ],
+        ),
     ];
   }
 
@@ -337,6 +365,21 @@ class SettingsSection extends StatelessWidget {
             title: appName,
             value: version.isEmpty ? '版本未知' : '版本 $version',
           ),
+          const _UpdateCheckTile(),
+          SwitchTile(
+            title: '启动时检查更新',
+            subtitle: '有新版本时每次启动都会提示，可在提示里忽略此版本',
+            value: store.checkUpdates,
+            onChanged: (value) =>
+                saveSetting(context, () => store.setCheckUpdates(value)),
+          ),
+          SwitchTile(
+            title: '匿名使用统计',
+            subtitle: '启动时发送随机编号、版本号、平台和红果鉴 / 真果鉴，用于统计使用人数',
+            value: store.shareUsage,
+            onChanged: (value) =>
+                saveSetting(context, () => store.setShareUsage(value)),
+          ),
         ],
       ),
       for (final links in _links)
@@ -379,6 +422,34 @@ class SettingsSection extends StatelessWidget {
     ),
     _BackupCard(store: store),
   ];
+}
+
+class _UpdateCheckTile extends StatefulWidget {
+  const _UpdateCheckTile();
+
+  @override
+  State<_UpdateCheckTile> createState() => _UpdateCheckTileState();
+}
+
+class _UpdateCheckTileState extends State<_UpdateCheckTile> {
+  var _busy = false;
+
+  Future<void> _check() async {
+    setState(() => _busy = true);
+    try {
+      await checkUpdateManually(context);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => SettingsTile(
+    title: '检查更新',
+    value: _busy ? '检查中' : null,
+    enabled: !_busy,
+    onTap: _check,
+  );
 }
 
 class _BackupCard extends StatefulWidget {

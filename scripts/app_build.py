@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 
 
@@ -19,7 +20,11 @@ class BuildVariant:
 
     @property
     def linker_flags(self):
-        return '-s -w -X duanjuapp/native/core.buildAllSources=' + str(self.all_sources).lower()
+        flags = '-s -w -X duanjuapp/native/core.buildAllSources=' + str(self.all_sources).lower()
+        update_server = os.environ.get('UPDATE_SERVER_URL', '').strip()
+        if update_server:
+            flags += ' -X duanjuapp/native/core.nativeUpdateServer=' + update_server
+        return flags
 
 
 def add_variant_argument(parser):

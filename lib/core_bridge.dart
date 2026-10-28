@@ -19,6 +19,7 @@ import 'catalog_updates.dart';
 import 'download_collections.dart';
 import 'resource_settings.dart';
 import 'diary_service.dart';
+import 'app_update.dart';
 
 typedef _NativeRequest = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _DartRequest = Pointer<Utf8> Function(Pointer<Utf8>);
@@ -152,6 +153,8 @@ abstract class AppRepository {
     Episode episode, {
     int quality = 0,
   }) => resolve(drama, episode, quality: quality);
+  Future<AppUpdate?> checkUpdate(String version) async => null;
+  Future<void> reportUsage(String version) async {}
   Future<void> initialize();
   Future<CatalogPage> catalog(
     String source, {
@@ -433,6 +436,22 @@ class NativeRepository extends AppRepository {
     }))['count'],
   );
   int _playbackSequence = DateTime.now().microsecondsSinceEpoch;
+
+  @override
+  Future<AppUpdate?> checkUpdate(String version) async {
+    final result = await _call({'action': 'checkUpdate', 'version': version});
+    return result['available'] == true
+        ? AppUpdate(
+            version: result['version'] as String,
+            url: result['url'] as String,
+          )
+        : null;
+  }
+
+  @override
+  Future<void> reportUsage(String version) async {
+    await _call({'action': 'reportUsage', 'version': version});
+  }
 
   Future<Map<String, dynamic>> _call(Map<String, dynamic> input) async {
     try {

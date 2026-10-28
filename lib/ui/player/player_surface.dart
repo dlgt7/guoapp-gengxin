@@ -197,7 +197,9 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
   void _tapUp(TapUpDetails details, double width) {
     widget.onSurface();
     final x = details.localPosition.dx;
-    final side = x < width / 4
+    final side = !_session.store.playbackPreferences.doubleTapSeek
+        ? 0
+        : x < width / 4
         ? -1
         : x > width * 3 / 4
         ? 1
@@ -315,7 +317,7 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
               SwipeControls(
                 session: _session,
                 enabled: widget.fullscreen,
-                levels: true,
+                levels: _session.store.playbackPreferences.swipeLevels,
                 child: LayoutBuilder(
                   builder: (context, constraints) => GestureDetector(
                     behavior: HitTestBehavior.opaque,
