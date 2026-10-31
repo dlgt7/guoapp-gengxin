@@ -42,7 +42,7 @@ func TestNativeStreamDiagnosticsRewriteAndReadFailures(t *testing.T) {
 		io.WriteString(w, "not-a-playlist")
 	}))
 	defer upstream.Close()
-	engine, err := newNativeEngine(t.TempDir())
+	engine, err := newNativeEngine(t.TempDir(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func TestNativeStreamDiagnosticsHLSAssetsAndPrivacy(t *testing.T) {
 		}
 	}))
 	defer upstream.Close()
-	engine, err := newNativeEngine(t.TempDir())
+	engine, err := newNativeEngine(t.TempDir(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,7 +197,7 @@ func TestNativeStreamDiagnosticsCancellationAndHTTPFailure(t *testing.T) {
 		w.WriteHeader(http.StatusForbidden)
 	}))
 	defer upstream.Close()
-	engine, err := newNativeEngine(t.TempDir())
+	engine, err := newNativeEngine(t.TempDir(), "")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -57,6 +59,7 @@ class _AppShellState extends State<AppShell> {
   var _tab = AppTab.explore;
   var _headerFocused = false;
   FocusNode? _lastFocus;
+  Timer? _exitWindow;
   DownloadOverview? _downloads;
   DownloadConverter? _converter;
   FollowUpdater? _followUpdater;
@@ -98,6 +101,7 @@ class _AppShellState extends State<AppShell> {
     _followEntry.dispose();
     _mineEntry.dispose();
     _header.dispose();
+    _exitWindow?.cancel();
     _converter?.dispose();
     _downloads?.dispose();
     _followUpdater?.dispose();
@@ -122,9 +126,28 @@ class _AppShellState extends State<AppShell> {
     final navigator = _navigator;
     if (navigator != null && await navigator.maybePop()) return;
     if (!mounted) return;
+    final television = AppScope.of(context).television;
+    if (_tab == AppTab.explore && (!television || _headerFocused)) {
+      _armExit();
+      return;
+    }
     if (_tab == AppTab.explore) _explore.currentState?.refresh();
     _select(AppTab.explore);
-    if (AppScope.of(context).television) _tabFocus.first.requestFocus();
+    if (television) _tabFocus.first.requestFocus();
+  }
+
+  void _armExit() {
+    const window = Duration(seconds: 2);
+    setState(() {
+      _exitWindow = Timer(window, () {
+        if (mounted) setState(() => _exitWindow = null);
+      });
+    });
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('再按一次返回退出应用'), duration: window),
+      );
   }
 
   Widget _root(AppTab tab) => switch (tab) {
@@ -170,7 +193,10 @@ class _AppShellState extends State<AppShell> {
     final covered = _navigator?.canPop() ?? false;
     return PopScope(
       canPop:
-          _tab == AppTab.explore && !covered && (!television || _headerFocused),
+          _exitWindow != null &&
+          _tab == AppTab.explore &&
+          !covered &&
+          (!television || _headerFocused),
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _back();
       },
@@ -258,7 +284,7 @@ class _AppShellState extends State<AppShell> {
       ],
     );
     final store = widget.store;
-    if (_tab != AppTab.explore || store.source.isEmpty) {
+    if (store.source.isEmpty) {
       return SizedBox(height: 48, child: tabs);
     }
     final source = SourceSite.byId(store.source);

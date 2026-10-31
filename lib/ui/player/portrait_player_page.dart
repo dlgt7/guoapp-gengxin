@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +15,7 @@ import '../theme/app_theme.dart';
 import '../widgets/follow_button.dart';
 import 'danmaku_overlay.dart';
 import 'episode_grid.dart';
+import 'mini_player.dart';
 import 'playback_sheets.dart';
 import 'playback_handle.dart';
 import 'player_surface.dart';
@@ -31,9 +31,11 @@ class PortraitPlayerPage extends StatefulWidget {
     super.key,
     required this.store,
     required this.handle,
+    this.onMiniWindow,
   });
   final LocalStore store;
   final PlaybackHandle handle;
+  final VoidCallback? onMiniWindow;
 
   @override
   State<PortraitPlayerPage> createState() => _PortraitPlayerPageState();
@@ -81,11 +83,7 @@ class _PortraitPlayerPageState extends State<PortraitPlayerPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) =>
-      _session.setForeground(
-        state == AppLifecycleState.resumed ||
-            defaultTargetPlatform == TargetPlatform.windows &&
-                state == AppLifecycleState.inactive,
-      );
+      _session.setForeground(playerVisible(state));
 
   void _bind() {
     final player = _session.player;
@@ -228,7 +226,11 @@ class _PortraitPlayerPageState extends State<PortraitPlayerPage>
 
   Future<void> _openSettings() => showPlayerSheet(
     context,
-    (_) => PlaybackSettings(session: _session, onFailure: _saveFailed),
+    (_) => PlaybackSettings(
+      session: _session,
+      onFailure: _saveFailed,
+      onMiniWindow: widget.onMiniWindow,
+    ),
   );
 
   Future<void> _openEpisodes() => showPlayerSheet(

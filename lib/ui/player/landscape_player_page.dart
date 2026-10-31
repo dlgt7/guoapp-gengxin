@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:window_manager/window_manager.dart';
 
 import '../../app_device.dart';
 import '../../local_store.dart';
@@ -20,10 +18,12 @@ import 'danmaku_overlay.dart';
 import '../widgets/status_view.dart';
 import '../widgets/follow_button.dart';
 import 'episode_grid.dart';
+import 'mini_player.dart';
 import 'playback_handle.dart';
 import 'playback_sheets.dart';
 import 'player_surface.dart';
 import 'swipe_controls.dart';
+import 'window_fullscreen.dart';
 
 enum _Panel { episodes, settings, speed, quality }
 
@@ -33,10 +33,12 @@ class LandscapePlayerPage extends StatefulWidget {
     required this.store,
     required this.handle,
     this.onFullscreen,
+    this.onMiniWindow,
   });
   final LocalStore store;
   final PlaybackHandle handle;
   final VoidCallback? onFullscreen;
+  final VoidCallback? onMiniWindow;
 
   @override
   State<LandscapePlayerPage> createState() => _LandscapePlayerPageState();
@@ -117,8 +119,8 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
     _seekTimer?.cancel();
     if (_holding) _session.endBoost();
     if (widget.onFullscreen == null) {
-      if (_full == true && defaultTargetPlatform == TargetPlatform.windows) {
-        unawaited(windowManager.setFullScreen(false).catchError((Object _) {}));
+      if (_full == true && desktopPlatform) {
+        unawaited(setWindowFullScreen(false));
       }
       unawaited(AppDevice.releaseOrientation());
       unawaited(
@@ -132,11 +134,7 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) =>
-      _session.setForeground(
-        state == AppLifecycleState.resumed ||
-            defaultTargetPlatform == TargetPlatform.windows &&
-                state == AppLifecycleState.inactive,
-      );
+      _session.setForeground(playerVisible(state));
 
   void _bind() {
     final player = _session.player;
@@ -297,8 +295,8 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
   }
 
   void _rotate(bool full) => unawaited(
-    defaultTargetPlatform == TargetPlatform.windows
-        ? windowManager.setFullScreen(!full).catchError((Object _) {})
+    desktopPlatform
+        ? setWindowFullScreen(!full)
         : AppDevice.setPlayerOrientation(
             full ? PlayerOrientation.portrait : PlayerOrientation.landscape,
           ),
@@ -549,7 +547,8 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
                 () => unawaited(Navigator.maybePop(context)),
               ),
               const Spacer(),
-              _icon(Icons.picture_in_picture_alt_rounded, '小窗', null),
+              if (widget.onMiniWindow case final onMiniWindow?)
+                _icon(Icons.picture_in_picture_alt_rounded, '小窗', onMiniWindow),
               _icon(Icons.settings_rounded, '播放设置', _openSettings),
             ],
           ),
@@ -678,7 +677,8 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
               ),
               const SizedBox(width: 4),
               if (session.danmakuSupported) _danmakuButton(context),
-              _icon(Icons.picture_in_picture_alt_rounded, '小窗', null),
+              if (widget.onMiniWindow case final onMiniWindow?)
+                _icon(Icons.picture_in_picture_alt_rounded, '小窗', onMiniWindow),
               _icon(
                 Icons.settings_rounded,
                 '播放设置',

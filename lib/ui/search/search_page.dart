@@ -114,6 +114,8 @@ class _SearchPageState extends State<SearchPage> {
       autofocus: widget.query.isEmpty,
       onChanged: _changed,
       onSubmitted: _submit,
+      letterKeyboard: widget.store.televisionKeyboard,
+      matches: widget.source.searchSuggestions ? _repository.suggestions : null,
     );
     if (AppScope.of(context).television) {
       return Scaffold(

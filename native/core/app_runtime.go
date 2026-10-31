@@ -106,6 +106,7 @@ type nativeInput struct {
 	Command         string                  `json:"command"`
 	Action          string                  `json:"action"`
 	Directory       string                  `json:"directory"`
+	Downloads       string                  `json:"downloads"`
 	Source          string                  `json:"source"`
 	Page            int                     `json:"page"`
 	Query           string                  `json:"query"`
@@ -156,6 +157,7 @@ type nativeEngine struct {
 	downloads        *nativeDownloads
 	downloader       *Downloader
 	directory        string
+	defaultDownloads string
 	mu               sync.Mutex
 	catalogs         map[string][]nativeDrama
 	catalogStates    map[string]nativeCatalogState
@@ -171,6 +173,8 @@ type nativeEngine struct {
 	playbackCancel   context.CancelFunc
 	sourceCatalogMu  sync.Mutex
 	sourceCatalogs   map[string]chan struct{}
+	updateMu         sync.Mutex
+	updateJob        *nativeUpdateJob
 }
 
 var nativeState struct {
@@ -242,7 +246,7 @@ func nativeDramaCategory(drama Drama) string {
 	return ""
 }
 
-func newNativeEngine(directory string) (*nativeEngine, error) {
+func newNativeEngine(directory, downloads string) (*nativeEngine, error) {
 	if !filepath.IsAbs(directory) {
 		return nil, errors.New("应用数据目录无效")
 	}
@@ -270,7 +274,10 @@ func newNativeEngine(directory string) (*nativeEngine, error) {
 			}
 			return nil
 		}}
-	engine := &nativeEngine{downloader: d, directory: directory, catalogs: map[string][]nativeDrama{}, catalogStates: map[string]nativeCatalogState{}}
+	engine := &nativeEngine{downloader: d, directory: directory, defaultDownloads: nativeDefaultDownloads(directory), catalogs: map[string][]nativeDrama{}, catalogStates: map[string]nativeCatalogState{}}
+	if filepath.IsAbs(downloads) {
+		engine.defaultDownloads = filepath.Clean(downloads)
+	}
 	engine.loadResourceSettings()
 	d.loadRankingCache()
 	engine.loadCatalogCache()
@@ -318,7 +325,7 @@ func nativeDispatch(input nativeInput) (any, error) {
 	nativeState.Lock()
 	if input.Action == "initialize" {
 		if nativeState.engine == nil {
-			engine, err := newNativeEngine(input.Directory)
+			engine, err := newNativeEngine(input.Directory, input.Downloads)
 			if err != nil {
 				nativeState.Unlock()
 				return nil, err
@@ -451,6 +458,8 @@ func nativeDispatch(input nativeInput) (any, error) {
 		return engine.checkUpdate(ctx, input.Version)
 	case "reportUsage":
 		return true, engine.reportUsage(ctx, input.Version)
+	case "updateDownload":
+		return engine.updateDownload(input)
 	default:
 		return nil, errors.New("不支持的应用操作")
 	}

@@ -167,6 +167,11 @@ class _HistoryPageState extends State<HistoryPage> {
     focusNode: focusNode,
     height: height,
     onSubmitted: (_) {},
+    letterKeyboard: widget.store.televisionKeyboard,
+    matches: (query) async => {
+      for (final entry in widget.store.history)
+        if (matchesWatchTitle(entry, query)) entry.drama.title,
+    }.toList(),
   );
 
   Widget _textButton(

@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:window_manager/window_manager.dart';
 
 import '../../local_store.dart';
 import '../../models.dart';
@@ -14,8 +12,10 @@ import '../theme/app_theme.dart';
 import '../widgets/focus_ring.dart';
 import '../widgets/follow_button.dart';
 import 'episode_grid.dart';
+import 'mini_player.dart';
 import 'playback_handle.dart';
 import 'player_surface.dart';
+import 'window_fullscreen.dart';
 
 const _panelWidth = 360.0;
 
@@ -25,10 +25,12 @@ class PlayerPage extends StatefulWidget {
     required this.store,
     required this.handle,
     this.padFullscreen,
+    this.onMiniWindow,
   });
   final LocalStore store;
   final PlaybackHandle handle;
   final ValueNotifier<bool>? padFullscreen;
+  final VoidCallback? onMiniWindow;
 
   @override
   State<PlayerPage> createState() => _PlayerPageState();
@@ -69,11 +71,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _playback.setForeground(
-      state == AppLifecycleState.resumed ||
-          defaultTargetPlatform == TargetPlatform.windows &&
-              state == AppLifecycleState.inactive,
-    );
+    _playback.setForeground(playerVisible(state));
   }
 
   bool get _canDownload =>
@@ -82,8 +80,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   bool get _roomy => MediaQuery.sizeOf(context).width - 32 >= 840;
 
-  Future<void> _setFullScreen(bool value) =>
-      windowManager.setFullScreen(value).catchError((Object _) {});
+  Future<void> _setFullScreen(bool value) => setWindowFullScreen(value);
 
   Future<void> _toggleFullscreen() async {
     if (widget.padFullscreen case final pad?) {
@@ -247,6 +244,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             wide: _wide,
             onFullscreen: () => unawaited(_toggleFullscreen()),
             onWide: _toggleWide,
+            onMiniWindow: widget.onMiniWindow,
             onSurface: _focus.requestFocus,
           ),
         ),

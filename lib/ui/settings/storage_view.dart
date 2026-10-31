@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../app_device.dart';
+import '../../core_bridge.dart';
 import '../../local_store.dart';
 import '../app_scope.dart';
 import '../widgets/focus_ring.dart';
@@ -30,10 +32,13 @@ class StorageView extends StatefulWidget {
 class _StorageViewState extends State<StorageView> {
   Map<String, dynamic>? _info;
   String? _error;
+  bool _loaded = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_loaded) return;
+    _loaded = true;
     _refresh();
   }
 
@@ -80,12 +85,25 @@ class _StorageViewState extends State<StorageView> {
   Future<void> _move() async {
     final parent = await _pickParent();
     if (parent == null || !mounted) return;
+    await _migrate(parent, parent);
+  }
+
+  Future<void> _restore() => _migrate('', '应用默认目录');
+
+  Future<void> _setAutoExport(bool value) => saveSetting(context, () async {
+    if (value && !await AppDevice.requestVideoExport()) {
+      throw AppFailure('未获得存储权限，无法自动导出');
+    }
+    await widget.store.setAutoExport(value);
+  });
+
+  Future<void> _migrate(String parent, String destination) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('迁移已下载内容？'),
         content: Text(
-          '将下载目录里的全部内容迁移到：\n$parent\n\n下载会先暂停，复制成功后清理旧目录。请保证目标有足够空间，并在完成后继续下载。',
+          '将下载目录里的全部内容迁移到：\n$destination\n\n下载会先暂停，复制成功后清理旧目录。请保证目标有足够空间，并在完成后继续下载。',
         ),
         actions: [
           TextButton(
@@ -147,6 +165,7 @@ class _StorageViewState extends State<StorageView> {
     final colors = Theme.of(context).colorScheme;
     final directory = info['directory'] as String? ?? '';
     final admin = widget.store.profile.admin;
+    final isDefault = info['default'] == true;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
@@ -193,9 +212,56 @@ class _StorageViewState extends State<StorageView> {
               onTap: _move,
             ),
             const Divider(indent: 16, endIndent: 16),
+            SettingsTile(
+              title: '恢复默认下载目录',
+              subtitle: !admin
+                  ? '需要管理员'
+                  : isDefault
+                  ? '正在使用默认目录'
+                  : '迁移回应用默认目录',
+              enabled: admin && !isDefault,
+              onTap: _restore,
+            ),
+            const Divider(indent: 16, endIndent: 16),
             SettingsTile(title: '刷新用量', onTap: _refresh),
           ],
         ),
+        if (Platform.isAndroid) ...[
+          const SizedBox(height: 16),
+          ListenableBuilder(
+            listenable: widget.store,
+            builder: (context, _) => GroupCard(
+              children: [
+                SwitchTile(
+                  title: '下载完成后自动导出',
+                  subtitle: '导出到 Movies/剧名/，相册和文件管理器可见，卸载后保留',
+                  value: widget.store.autoExport,
+                  onChanged: _setAutoExport,
+                ),
+                const Divider(indent: 16, endIndent: 16),
+                SwitchTile(
+                  title: '自动导出后删除 App 内副本',
+                  subtitle: '删除后 App 内不能再离线播放',
+                  value: widget.store.deleteAfterAutoExport,
+                  onChanged: (value) => saveSetting(
+                    context,
+                    () => widget.store.setDeleteAfterAutoExport(value),
+                  ),
+                ),
+                const Divider(indent: 16, endIndent: 16),
+                SwitchTile(
+                  title: '手动导出后删除 App 内副本',
+                  subtitle: '在已下载剧页「编辑」里点「导出」后删除',
+                  value: widget.store.deleteAfterManualExport,
+                  onChanged: (value) => saveSetting(
+                    context,
+                    () => widget.store.setDeleteAfterManualExport(value),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: Text(

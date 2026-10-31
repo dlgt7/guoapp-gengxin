@@ -29,4 +29,10 @@ void main() {
     expect(matchesWatchTitle(entry, 'ＬＯＶＥ'), isTrue);
     expect(matchesWatchTitle(entry, '王爷'), isFalse);
   });
+
+  test('titles match pinyin initials', () {
+    final entry = watching(drama('a', title: '霸道总裁 · Love'));
+    expect(matchesWatchTitle(entry, 'BDZC'), isTrue);
+    expect(matchesWatchTitle(entry, 'wy'), isFalse);
+  });
 }

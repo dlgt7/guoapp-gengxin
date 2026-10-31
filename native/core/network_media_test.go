@@ -97,7 +97,7 @@ func TestHuangguoMediaUsesBrowserSessionPageRefererAndPreviewToken(t *testing.T)
 	if len(match) != 2 || read(match[1]) != "0123456789abcdef" {
 		t.Fatal("player did not receive source key")
 	}
-	engine := &nativeEngine{downloader: d, directory: d.cfg.dataDir}
+	engine := &nativeEngine{downloader: d, directory: d.cfg.dataDir, defaultDownloads: nativeDefaultDownloads(d.cfg.dataDir)}
 	manager := newNativeDownloads(engine)
 	engine.downloads = manager
 	t.Cleanup(manager.close)
@@ -176,7 +176,7 @@ func TestLegacyPlaybackAndDownloadUseAuthenticatedPlaylistAndSourceKey(t *testin
 	if err != nil || media.Duration.Seconds() != 4 {
 		t.Fatal("legacy resolver failed", err)
 	}
-	engine := &nativeEngine{downloader: d, directory: d.cfg.dataDir}
+	engine := &nativeEngine{downloader: d, directory: d.cfg.dataDir, defaultDownloads: nativeDefaultDownloads(d.cfg.dataDir)}
 	manager := newNativeDownloads(engine)
 	engine.downloads = manager
 	t.Cleanup(manager.close)

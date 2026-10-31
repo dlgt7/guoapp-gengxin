@@ -6,7 +6,5 @@ List<SourceSite> followedSources(List<Drama> dramas) => [
     if (dramas.any((drama) => drama.source == site.id)) site,
 ];
 
-bool matchesFollowTitle(Drama drama, String query) {
-  final term = normalizedSearchText(query);
-  return term.isEmpty || normalizedSearchText(drama.title).contains(term);
-}
+bool matchesFollowTitle(Drama drama, String query) =>
+    matchesTitle(drama.title, query);

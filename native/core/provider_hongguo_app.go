@@ -154,8 +154,9 @@ func (downloader *Downloader) hongguoAppRequest(ctx context.Context, method, pat
 	comment, _ := ctx.Value(hongguoCommentKey{}).(bool)
 	helper, _ := ctx.Value(hongguoHelperDeviceKey{}).(bool)
 	signed := !comment && path != hongguoBookmallTabPath
+	var registerErr error
 	if signed {
-		_ = downloader.ensureHongguoDevice(ctx, helper, "")
+		registerErr = downloader.ensureHongguoDevice(ctx, helper, "")
 	}
 	client.mu.Lock()
 	base := client.baseURL
@@ -249,12 +250,17 @@ func (downloader *Downloader) hongguoAppRequest(ctx context.Context, method, pat
 		}
 		if len(content) == 0 {
 			lastErr = errors.New("红果 App 接口未返回有效数据")
-			if signed && rotations < hongguoDeviceRotations && downloader.ensureHongguoDevice(ctx, helper, deviceID) == nil {
-				rotations++
-				deviceID, installID, _ = client.device(helper)
-				query.Set("device_id", deviceID)
-				query.Set("iid", installID)
-				attempt--
+			if signed && rotations < hongguoDeviceRotations {
+				if registerErr = downloader.ensureHongguoDevice(ctx, helper, deviceID); registerErr == nil {
+					rotations++
+					deviceID, installID, _ = client.device(helper)
+					query.Set("device_id", deviceID)
+					query.Set("iid", installID)
+					attempt--
+				}
+			}
+			if registerErr != nil {
+				lastErr = fmt.Errorf("红果 App 接口未返回有效数据（设备注册失败：%v）", registerErr)
 			}
 			continue
 		}

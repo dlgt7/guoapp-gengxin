@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'core_bridge.dart';
+
 class AppDevice {
   const AppDevice({this.television = false, this.version = ''});
   final bool television;
@@ -49,6 +51,18 @@ class AppDevice {
     if (defaultTargetPlatform != TargetPlatform.android) return false;
     try {
       return await channel.invokeMethod<bool>('compatibleRendering') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<bool> installPackage(String path) async {
+    if (defaultTargetPlatform != TargetPlatform.android) return false;
+    try {
+      return await channel.invokeMethod<bool>('installPackage', {
+            'path': path,
+          }) ??
+          false;
     } catch (_) {
       return false;
     }
@@ -146,6 +160,47 @@ class AppDevice {
   static Future<void> setVolume(double value) async {
     try {
       await channel.invokeMethod<void>('setVolume', {'volume': value});
+    } catch (_) {}
+  }
+
+  static Future<String?> createDocument(String name, String mimeType) async {
+    try {
+      return await channel.invokeMethod<String>('createDocument', {
+        'name': name,
+        'mimeType': mimeType,
+      });
+    } on PlatformException catch (error) {
+      throw AppFailure(error.message ?? '无法创建文件');
+    }
+  }
+
+  static Future<bool> requestVideoExport() async {
+    try {
+      return await channel.invokeMethod<bool>('requestVideoExport') ?? false;
+    } on PlatformException catch (error) {
+      throw AppFailure(error.message ?? '无法申请存储权限');
+    }
+  }
+
+  static Future<void> exportVideo(
+    String source,
+    String folder,
+    String name,
+  ) async {
+    try {
+      await channel.invokeMethod<void>('exportVideo', {
+        'source': source,
+        'folder': folder,
+        'name': name,
+      });
+    } on PlatformException catch (error) {
+      throw AppFailure(error.message ?? '导出失败');
+    }
+  }
+
+  static Future<void> deleteDocument(String uri) async {
+    try {
+      await channel.invokeMethod<bool>('deleteDocument', {'uri': uri});
     } catch (_) {}
   }
 

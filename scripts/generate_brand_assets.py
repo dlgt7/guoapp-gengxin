@@ -44,6 +44,15 @@ for entry in contents['images']:
         save(icon.resize((size, size), Image.Resampling.LANCZOS),
              'ios/Runner/Assets.xcassets/AppIcon.appiconset/' + entry['filename'])
 save(rounded.resize((256, 256), Image.Resampling.LANCZOS), 'windows/runner/resources/app_icon.ico')
+macos_canvas = Image.new('RGBA', (1024, 1024))
+macos_badge = rounded.resize((824, 824), Image.Resampling.LANCZOS)
+macos_canvas.paste(macos_badge, (100, 100), macos_badge)
+macos_contents = json.loads((root / 'macos/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json').read_text())
+for entry in macos_contents['images']:
+    if 'filename' in entry:
+        size = round(float(entry['size'].split('x')[0]) * float(entry['scale'].rstrip('x')))
+        save(macos_canvas.resize((size, size), Image.Resampling.LANCZOS),
+             'macos/Runner/Assets.xcassets/AppIcon.appiconset/' + entry['filename'])
 for density, scale in [('mdpi', 1), ('hdpi', 1.5), ('xhdpi', 2), ('xxhdpi', 3), ('xxxhdpi', 4)]:
     legacy = round(48 * scale)
     layer = round(108 * scale)
@@ -53,7 +62,14 @@ for density, scale in [('mdpi', 1), ('hdpi', 1.5), ('xhdpi', 2), ('xxhdpi', 3), 
          f'android/app/src/main/res/mipmap-{density}/ic_launcher_foreground.png')
     save(monochrome.resize((layer, layer), Image.Resampling.LANCZOS),
          f'android/app/src/main/res/mipmap-{density}/ic_launcher_monochrome.png')
-font = ImageFont.truetype(str(options.font), 76)
+font_path = options.font
+if not font_path.exists():
+    for candidate in ('/System/Library/Fonts/Hiragino Sans GB.ttc',
+                      '/System/Library/Fonts/STHeiti Medium.ttc'):
+        if Path(candidate).exists():
+            font_path = Path(candidate)
+            break
+font = ImageFont.truetype(str(font_path), 76)
 for name, resource in [('红果鉴', 'tv_banner'), ('真果鉴', 'tv_banner_all_sources')]:
     banner = Image.new('RGB', (640, 360), '#F5F9FC')
     badge = rounded.resize((180, 180), Image.Resampling.LANCZOS)

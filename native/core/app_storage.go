@@ -15,6 +15,7 @@ type nativeStorageInfo struct {
 	Bytes     int64  `json:"bytes"`
 	Free      int64  `json:"free"`
 	Files     int    `json:"files"`
+	Default   bool   `json:"default"`
 }
 
 func (engine *nativeEngine) storage() (nativeStorageInfo, error) {
@@ -22,7 +23,7 @@ func (engine *nativeEngine) storage() (nativeStorageInfo, error) {
 	manager.mu.Lock()
 	root := manager.root
 	manager.mu.Unlock()
-	info := nativeStorageInfo{Directory: root}
+	info := nativeStorageInfo{Directory: root, Default: root == engine.defaultDownloads}
 	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -45,14 +46,43 @@ func (engine *nativeEngine) storage() (nativeStorageInfo, error) {
 	return info, nil
 }
 
-func nativeDownloadLocation(directory string) string {
+func nativeDownloadLocation(directory, fallback string) string {
 	var value struct {
 		Directory string `json:"directory"`
 	}
-	body, _ := os.ReadFile(filepath.Join(directory, "download-location.json"))
+	location := filepath.Join(directory, "download-location.json")
+	body, _ := os.ReadFile(location)
 	if json.Unmarshal(body, &value) == nil && filepath.IsAbs(value.Directory) {
 		return filepath.Clean(value.Directory)
 	}
+	legacy := nativeDefaultDownloads(directory)
+	if fallback != legacy && nativeDownloadsInUse(legacy) {
+		data, _ := json.Marshal(map[string]string{"directory": legacy})
+		_ = nativeDownloadWrite(location, data)
+		return legacy
+	}
+	return fallback
+}
+
+func nativeDownloadsInUse(root string) bool {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return false
+	}
+	for _, entry := range entries {
+		if entry.Name() != "index.json" {
+			return true
+		}
+	}
+	body, err := os.ReadFile(filepath.Join(root, "index.json"))
+	if os.IsNotExist(err) {
+		return false
+	}
+	var records []json.RawMessage
+	return err != nil || json.Unmarshal(body, &records) != nil || len(records) > 0
+}
+
+func nativeDefaultDownloads(directory string) string {
 	return filepath.Join(directory, "downloads")
 }
 
@@ -112,18 +142,20 @@ func nativeCopyTree(ctx context.Context, source, target string) error {
 }
 
 func (engine *nativeEngine) moveDownloads(ctx context.Context, parent string) error {
-	if !filepath.IsAbs(parent) {
-		return errors.New("请选择有效的保存目录")
+	target := engine.defaultDownloads
+	if parent != "" {
+		if !filepath.IsAbs(parent) {
+			return errors.New("请选择有效的保存目录")
+		}
+		resolved, err := filepath.EvalSymlinks(parent)
+		if err != nil {
+			return errors.New("无法打开所选目录")
+		}
+		target = filepath.Join(filepath.Clean(resolved), "zhenguojian-downloads")
 	}
 	manager := engine.downloads
-	resolved, err := filepath.EvalSymlinks(parent)
-	if err != nil {
-		return errors.New("无法打开所选目录")
-	}
-	parent = resolved
 	engine.mu.Lock()
 	defer engine.mu.Unlock()
-	target := filepath.Join(filepath.Clean(parent), "zhenguojian-downloads")
 	manager.mu.Lock()
 	if manager.loadErr != nil {
 		manager.mu.Unlock()
@@ -179,8 +211,17 @@ func (engine *nativeEngine) moveDownloads(ctx context.Context, parent string) er
 		_ = os.RemoveAll(target)
 		return err
 	}
-	data, _ := json.Marshal(map[string]string{"directory": target})
-	if err := nativeDownloadWrite(filepath.Join(engine.directory, "download-location.json"), data); err != nil {
+	location := filepath.Join(engine.directory, "download-location.json")
+	var persistErr error
+	if target == nativeDefaultDownloads(engine.directory) {
+		if err := os.Remove(location); !os.IsNotExist(err) {
+			persistErr = err
+		}
+	} else {
+		data, _ := json.Marshal(map[string]string{"directory": target})
+		persistErr = nativeDownloadWrite(location, data)
+	}
+	if persistErr != nil {
 		_ = os.RemoveAll(target)
 		return errors.New("保存下载目录失败，原文件已保留")
 	}

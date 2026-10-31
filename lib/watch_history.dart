@@ -24,7 +24,5 @@ List<SourceSite> watchedSources(List<WatchEntry> history) => [
     if (history.any((entry) => entry.drama.source == site.id)) site,
 ];
 
-bool matchesWatchTitle(WatchEntry entry, String query) {
-  final term = normalizedSearchText(query);
-  return term.isEmpty || normalizedSearchText(entry.drama.title).contains(term);
-}
+bool matchesWatchTitle(WatchEntry entry, String query) =>
+    matchesTitle(entry.drama.title, query);

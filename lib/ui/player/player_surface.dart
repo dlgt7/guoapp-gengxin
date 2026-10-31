@@ -31,6 +31,7 @@ class PlayerSurface extends StatefulWidget {
     required this.wide,
     required this.onFullscreen,
     required this.onWide,
+    this.onMiniWindow,
     required this.onSurface,
   });
   final PlaybackHandle handle;
@@ -40,6 +41,7 @@ class PlayerSurface extends StatefulWidget {
   final bool wide;
   final VoidCallback onFullscreen;
   final VoidCallback onWide;
+  final VoidCallback? onMiniWindow;
   final VoidCallback onSurface;
 
   @override
@@ -629,7 +631,8 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
               () => _session.toggleMute(),
             ),
           ),
-        _icon(Icons.picture_in_picture_alt_rounded, '画中画', null),
+        if (widget.onMiniWindow case final onMiniWindow?)
+          _icon(Icons.picture_in_picture_alt_rounded, '画中画', onMiniWindow),
         if (!widget.touch && !widget.fullscreen)
           _icon(
             Icons.width_wide_rounded,

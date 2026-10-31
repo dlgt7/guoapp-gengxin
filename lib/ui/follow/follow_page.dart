@@ -170,6 +170,11 @@ class _FollowPageState extends State<FollowPage> {
     controller: _query,
     focusNode: focusNode,
     onSubmitted: (_) {},
+    letterKeyboard: widget.store.televisionKeyboard,
+    matches: (query) async => {
+      for (final drama in widget.store.favorites)
+        if (matchesFollowTitle(drama, query)) drama.title,
+    }.toList(),
   );
 
   Widget _textButton(

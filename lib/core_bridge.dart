@@ -34,10 +34,10 @@ String _nativeRequest(String body) {
     library = DynamicLibrary.open(
       path.join(path.dirname(Platform.resolvedExecutable), 'duanju_core.dll'),
     );
-  } else if (Platform.isIOS) {
+  } else if (Platform.isIOS || Platform.isMacOS) {
     library = DynamicLibrary.process();
   } else {
-    throw UnsupportedError('当前首版支持 Android 手机和 Windows 电脑');
+    throw UnsupportedError('当前支持 Android、iOS、Windows 和 macOS');
   }
   final request = library.lookupFunction<_NativeRequest, _DartRequest>(
     'DuanjuRequest',
@@ -155,6 +155,10 @@ abstract class AppRepository {
   }) => resolve(drama, episode, quality: quality);
   Future<AppUpdate?> checkUpdate(String version) async => null;
   Future<void> reportUsage(String version) async {}
+  Future<void> startUpdateDownload(String version, String directory) async {}
+  Future<UpdateDownload> updateDownloadStatus() async =>
+      const UpdateDownload(error: '当前版本不支持应用内更新');
+  Future<void> cancelUpdateDownload() async {}
   Future<void> initialize();
   Future<CatalogPage> catalog(
     String source, {
@@ -453,6 +457,35 @@ class NativeRepository extends AppRepository {
     await _call({'action': 'reportUsage', 'version': version});
   }
 
+  @override
+  Future<void> startUpdateDownload(String version, String directory) async {
+    await _call({
+      'action': 'updateDownload',
+      'command': 'start',
+      'version': version,
+      'directory': directory,
+    });
+  }
+
+  @override
+  Future<UpdateDownload> updateDownloadStatus() async {
+    final result = await _call({
+      'action': 'updateDownload',
+      'command': 'status',
+    });
+    return UpdateDownload(
+      received: intValue(result['received']),
+      total: intValue(result['total']),
+      path: result['path'] as String? ?? '',
+      error: result['error'] as String? ?? '',
+    );
+  }
+
+  @override
+  Future<void> cancelUpdateDownload() async {
+    await _call({'action': 'updateDownload', 'command': 'cancel'});
+  }
+
   Future<Map<String, dynamic>> _call(Map<String, dynamic> input) async {
     try {
       final action = input['action'] as String;
@@ -584,9 +617,13 @@ class NativeRepository extends AppRepository {
     if (!background) {
       DiaryService.nativeLogPath = path.join(directory.path, 'logs', 'app.log');
     }
+    final external = Platform.isAndroid
+        ? await getExternalStorageDirectory()
+        : null;
     final build = await _call({
       'action': 'initialize',
       'directory': directory.path,
+      if (external != null) 'downloads': path.join(external.path, 'downloads'),
     });
     if (build['allSources'] != allSourcesEnabled) {
       throw AppFailure('应用与原生核心的站源版本不一致，请使用完整安装包重新安装');

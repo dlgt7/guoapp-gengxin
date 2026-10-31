@@ -21,7 +21,7 @@ import (
 
 func downloadTestManager(t *testing.T) *nativeDownloads {
 	t.Helper()
-	engine, err := newNativeEngine(t.TempDir())
+	engine, err := newNativeEngine(t.TempDir(), "")
 	if err != nil {
 		t.Fatal(err)
 	}

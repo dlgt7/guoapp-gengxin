@@ -143,6 +143,18 @@ class AppearanceSettings extends StatelessWidget {
                 }
               },
             ),
+            if (AppScope.of(context).television) ...[
+              const Divider(indent: 16, endIndent: 16),
+              SwitchTile(
+                title: '搜索用字母键盘',
+                subtitle: '开启后按确认键弹出字母键盘，可按拼音首字母搜；关闭时使用系统输入法',
+                value: store.televisionKeyboard,
+                onChanged: (value) => saveSetting(
+                  context,
+                  () => store.setTelevisionKeyboard(value),
+                ),
+              ),
+            ],
           ],
         ),
       ],

@@ -23,6 +23,13 @@ void main() {
     expect(matchesFollowTitle(item, '王爷'), isFalse);
   });
 
+  test('titles match pinyin initials', () {
+    final item = drama('a', title: '霸道总裁 · Love');
+    expect(matchesFollowTitle(item, 'BDZC'), isTrue);
+    expect(matchesFollowTitle(item, 'zclove'), isTrue);
+    expect(matchesFollowTitle(item, 'wy'), isFalse);
+  });
+
   test('the update check covers every unfinished follow', () async {
     final store = await openStore();
     final repository = FakeRepository();

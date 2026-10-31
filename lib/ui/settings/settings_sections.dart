@@ -180,6 +180,19 @@ class SettingsSection extends StatelessWidget {
             ),
           ],
         ),
+      if (Platform.isAndroid && !television)
+        SettingsCard(
+          children: [
+            SwitchTile(
+              title: '离开应用时自动小窗',
+              subtitle: '播放中回到桌面时自动进入画中画',
+              value: preferences.autoPictureInPicture,
+              onChanged: (value) => savePreferences(
+                preferences.copyWith(autoPictureInPicture: value),
+              ),
+            ),
+          ],
+        ),
     ];
   }
 
