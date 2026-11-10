@@ -135,6 +135,9 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
     if (mounted) setState(() {});
   }
 
+  bool get _controlsVisible =>
+      _visible || _session.paused || _session.stalled || !_session.ready;
+
   void _scheduleHide() {
     _hideTimer?.cancel();
     _hideTimer = Timer(Duration(milliseconds: widget.touch ? 3000 : 500), () {
@@ -185,8 +188,7 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
   }
 
   void _toggleControls() {
-    final state = _session.player.state;
-    if (_visible && state.playing && _session.ready && !_session.stalled) {
+    if (_visible && !_session.paused && _session.ready && !_session.stalled) {
       _hideTimer?.cancel();
       setState(() => _visible = false);
     } else {
@@ -290,8 +292,7 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
     listenable: _session,
     builder: (context, _) {
       final state = _session.player.state;
-      final visible =
-          _visible || !state.playing || _session.stalled || !_session.ready;
+      final visible = _controlsVisible;
       final popup = visible ? _popup : null;
       return MouseRegion(
         onHover: (_) => _movePointer(),
@@ -342,7 +343,7 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
               const IgnorePointer(
                 child: Center(child: CircularProgressIndicator()),
               ),
-            if (_session.ready && !state.playing) _pausedMark(),
+            if (_session.ready && _session.paused) _pausedMark(),
             if (_streak != 0) _streakBadge(),
             IgnorePointer(
               ignoring: !visible,
