@@ -22,6 +22,10 @@ jobs:
           channel: stable
           cache: true
 
+      # 不装依赖时 analysis_options.yaml 无法解析 flutter_lints，dart analyze 会报上万条假错误。
+      - name: Install Dart dependencies
+        run: flutter pub get --enforce-lockfile
+
       # 修复 dart analyze 的 curly_braces_in_flow_control_structures 报错。
       - name: Fix curly-braces lint
         run: |
