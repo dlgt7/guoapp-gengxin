@@ -23,6 +23,7 @@ const (
 var (
 	moduleIndexAddresses = []string{
 		"https://raw.githubusercontent.com/guoapp-modules/index/main/index.json",
+		"https://cfkua.wokaotianshi.eu.org/https://raw.githubusercontent.com/guoapp-modules/index/main/index.json",
 		"https://cdn.jsdelivr.net/gh/guoapp-modules/index@main/index.json",
 		"https://fastly.jsdelivr.net/gh/guoapp-modules/index@main/index.json",
 		"https://testingcf.jsdelivr.net/gh/guoapp-modules/index@main/index.json",
@@ -33,6 +34,7 @@ var (
 	}
 	moduleFileAddresses = []string{
 		"https://raw.githubusercontent.com/%s/%s/%s",
+		"https://cfkua.wokaotianshi.eu.org/https://raw.githubusercontent.com/%s/%s/%s",
 		"https://cdn.jsdelivr.net/gh/%s@%s/%s",
 		"https://fastly.jsdelivr.net/gh/%s@%s/%s",
 		"https://testingcf.jsdelivr.net/gh/%s@%s/%s",
