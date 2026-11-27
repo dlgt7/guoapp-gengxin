@@ -13,12 +13,10 @@ void main() {
     root = await Directory.systemTemp.createTemp('migration');
     legacy = Directory(path.join(root.path, '真果鉴', '真果鉴'));
     target = Directory(path.join(root.path, 'com.example.app'));
-    await File(
-      path.join(legacy.path, 'store', 'library.json'),
-    ).create(recursive: true);
-    await File(
-      path.join(legacy.path, 'shared_preferences.json'),
-    ).writeAsString('{}');
+    await File(path.join(legacy.path, 'store', 'library.json'))
+        .create(recursive: true);
+    await File(path.join(legacy.path, 'shared_preferences.json'))
+        .writeAsString('{}');
   });
 
   tearDown(() => root.delete(recursive: true));
@@ -47,9 +45,8 @@ void main() {
   });
 
   test('keeps both directories when the target already has data', () async {
-    await File(
-      path.join(target.path, 'store', 'own.json'),
-    ).create(recursive: true);
+    await File(path.join(target.path, 'store', 'own.json'))
+        .create(recursive: true);
 
     expect(await moveLegacyData(legacy, target), isFalse);
     expect(await legacy.exists(), isTrue);

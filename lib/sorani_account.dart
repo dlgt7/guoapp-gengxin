@@ -22,9 +22,8 @@ class SoraniCaptcha {
   });
   factory SoraniCaptcha.fromJson(Map<String, dynamic> json) => SoraniCaptcha(
     id: json['id'] as String,
-    background: UriData.parse(
-      json['backgroundImage'] as String,
-    ).contentAsBytes(),
+    background: UriData.parse(json['backgroundImage'] as String)
+        .contentAsBytes(),
     template: UriData.parse(json['templateImage'] as String).contentAsBytes(),
     backgroundWidth: json['backgroundWidth'] as int,
     backgroundHeight: json['backgroundHeight'] as int,

@@ -88,9 +88,8 @@ class _SliderTileState extends State<SliderTile> {
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
               ),
               child: MediaQuery(
-                data: MediaQuery.of(
-                  context,
-                ).copyWith(navigationMode: NavigationMode.directional),
+                data: MediaQuery.of(context)
+                    .copyWith(navigationMode: NavigationMode.directional),
                 child: ContainedSlider(
                   slider: Slider(
                     value: value.clamp(widget.min, widget.max),

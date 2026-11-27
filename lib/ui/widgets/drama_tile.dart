@@ -71,9 +71,8 @@ class _PosterButtonState extends State<_PosterButton> {
                       duration: const Duration(milliseconds: 120),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(_coverRadius),
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: layer),
+                        color: Theme.of(context).colorScheme.onSurface
+                            .withValues(alpha: layer),
                       ),
                     ),
                   ),

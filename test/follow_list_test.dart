@@ -143,49 +143,58 @@ void main() {
     expect(store.following(season1.id)?.hasUpdates, isFalse);
   });
 
-  test('already released seasons at first check stay silent as baseline', () async {
-    final store = await openStore();
-    final repository = FakeRepository();
-    final season1 = drama('s1', title: '系列剧1');
-    final season2 = drama('s2', title: '系列剧2', episodes: 60);
-    await store.toggleFavorite(season1);
-    repository.seasonLists[season1.id] = [
-      DramaSeason(number: 1, drama: season1),
-      DramaSeason(number: 2, drama: season2),
-    ];
+  test(
+    'already released seasons at first check stay silent as baseline',
+    () async {
+      final store = await openStore();
+      final repository = FakeRepository();
+      final season1 = drama('s1', title: '系列剧1');
+      final season2 = drama('s2', title: '系列剧2', episodes: 60);
+      await store.toggleFavorite(season1);
+      repository.seasonLists[season1.id] = [
+        DramaSeason(number: 1, drama: season1),
+        DramaSeason(number: 2, drama: season2),
+      ];
 
-    final updater = FollowUpdater(repository, store);
-    addTearDown(updater.dispose);
-    await updater.run();
+      final updater = FollowUpdater(repository, store);
+      addTearDown(updater.dispose);
+      await updater.run();
 
-    expect(store.following(season1.id)?.seasonsSeeded, isTrue);
-    expect(store.following(season1.id)?.hasUpdates, isFalse);
-    expect(store.following(season1.id)?.seriesSeasons[season2.id]?.read, isTrue);
-  });
+      expect(store.following(season1.id)?.seasonsSeeded, isTrue);
+      expect(store.following(season1.id)?.hasUpdates, isFalse);
+      expect(
+        store.following(season1.id)?.seriesSeasons[season2.id]?.read,
+        isTrue,
+      );
+    },
+  );
 
-  test('markUpdatesRead clears unread season badges and persists across restart', () async {
-    final store = await openStore();
-    final season1 = drama('s1', title: '系列剧1');
-    final season2 = drama('s2', title: '系列剧2', episodes: 60);
-    await store.toggleFavorite(season1);
-    await store.observeFollowSeasons(season1.id, const []);
-    await store.observeFollowSeasons(season1.id, [
-      DramaSeason(number: 1, drama: season1),
-      DramaSeason(number: 2, drama: season2),
-    ]);
-    expect(store.following(season1.id)?.updateBadge, '第2季已上线');
+  test(
+    'markUpdatesRead clears unread season badges and persists across restart',
+    () async {
+      final store = await openStore();
+      final season1 = drama('s1', title: '系列剧1');
+      final season2 = drama('s2', title: '系列剧2', episodes: 60);
+      await store.toggleFavorite(season1);
+      await store.observeFollowSeasons(season1.id, const []);
+      await store.observeFollowSeasons(season1.id, [
+        DramaSeason(number: 1, drama: season1),
+        DramaSeason(number: 2, drama: season2),
+      ]);
+      expect(store.following(season1.id)?.updateBadge, '第2季已上线');
 
-    final restarted = await restartStore(store);
-    expect(restarted.following(season1.id)?.updateBadge, '第2季已上线');
-    expect(restarted.following(season1.id)?.seasonsSeeded, isTrue);
+      final restarted = await restartStore(store);
+      expect(restarted.following(season1.id)?.updateBadge, '第2季已上线');
+      expect(restarted.following(season1.id)?.seasonsSeeded, isTrue);
 
-    await restarted.markUpdatesRead(season1.id);
-    expect(restarted.following(season1.id)?.hasUpdates, isFalse);
-    expect(
-      (await restartStore(restarted)).following(season1.id)?.hasUpdates,
-      isFalse,
-    );
-  });
+      await restarted.markUpdatesRead(season1.id);
+      expect(restarted.following(season1.id)?.hasUpdates, isFalse);
+      expect(
+        (await restartStore(restarted)).following(season1.id)?.hasUpdates,
+        isFalse,
+      );
+    },
+  );
 
   test('non-hongguo season notice and 4-element followCheck round-trip', () {
     final state = FollowState.fromJson({

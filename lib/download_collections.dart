@@ -200,9 +200,8 @@ class DownloadCollectionUpdater extends ChangeNotifier {
         if (job.drama.id == drama.id && _listed(job) && job.state != 'failed')
           job.episode.number,
     };
-    final all = {
-      for (final episode in detail.episodes) episode.number: episode,
-    }.values;
+    final all = {for (final episode in detail.episodes) episode.number: episode}
+        .values;
     final missing = [
       for (final episode in all)
         if (!known.contains(episode.number)) episode,

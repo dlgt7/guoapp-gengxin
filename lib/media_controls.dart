@@ -5,8 +5,10 @@ import 'package:flutter/services.dart';
 
 enum MediaCommand { play, pause, toggle, next, previous, seek }
 
-typedef MediaCommandHandler =
-    void Function(MediaCommand command, Duration? position);
+typedef MediaCommandHandler = void Function(
+  MediaCommand command,
+  Duration? position,
+);
 
 @immutable
 class MediaState {

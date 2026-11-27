@@ -161,8 +161,7 @@ Future<void> _openRelease(BuildContext context, String url) async {
   if (opened) return;
   await Clipboard.setData(ClipboardData(text: url));
   if (context.mounted) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('无法打开浏览器，链接已复制')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('无法打开浏览器，链接已复制')));
   }
 }

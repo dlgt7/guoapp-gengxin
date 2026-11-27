@@ -33,9 +33,9 @@ class _DataCardState extends State<DataCard> {
   }
 
   Future<void> _measure() async {
-    final bytes = await AppScope.of(
-      context,
-    ).repository.cacheBytes().catchError((Object _) => -1);
+    final bytes = await AppScope.of(context).repository
+        .cacheBytes()
+        .catchError((Object _) => -1);
     if (mounted) setState(() => _cacheBytes = bytes);
   }
 
@@ -118,9 +118,8 @@ class _DataCardState extends State<DataCard> {
     } catch (failure) {
       navigator.pop();
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$failure')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$failure')));
       }
       return;
     }

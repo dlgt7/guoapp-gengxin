@@ -359,9 +359,8 @@ class TelevisionDetailState extends State<TelevisionDetail> {
   void _toggleFollow() => unawaited(
     widget.store.toggleFavorite(_details.drama).catchError((Object failure) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$failure')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$failure')));
       }
     }),
   );

@@ -109,10 +109,8 @@ class SectionHeader extends StatelessWidget {
               header: true,
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontSize: 18, fontWeight: FontWeight.w700),
               ),
             ),
           ),

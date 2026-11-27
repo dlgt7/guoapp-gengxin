@@ -107,9 +107,9 @@ class _AppBootstrapState extends State<AppBootstrap>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
       unawaited(
-        NativeRepository(
-          background: true,
-        ).controlDownloads('pauseAll').catchError((Object _) {}),
+        NativeRepository(background: true)
+            .controlDownloads('pauseAll')
+            .catchError((Object _) {}),
       );
     }
   }

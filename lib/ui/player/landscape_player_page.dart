@@ -150,9 +150,8 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
       }
       unawaited(AppDevice.releaseOrientation());
       unawaited(
-        SystemChrome.setEnabledSystemUIMode(
-          SystemUiMode.edgeToEdge,
-        ).catchError((Object _) {}),
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge)
+            .catchError((Object _) {}),
       );
     }
     super.dispose();
@@ -391,9 +390,8 @@ class _LandscapePlayerPageState extends State<LandscapePlayerPage>
 
   void _saveFailed() {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
   }
 
   Future<void> _change(Future<void> Function() change) async {

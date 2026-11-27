@@ -66,9 +66,8 @@ class _SoraniAccountButtonState extends State<SoraniAccountButton> {
       if (mounted) setState(() => _account = account);
     } catch (failure) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$failure')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$failure')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -179,9 +178,8 @@ class _SoraniLoginDialogState extends State<_SoraniLoginDialog> {
     if (opened) return;
     await Clipboard.setData(const ClipboardData(text: _soraniSite));
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('无法打开浏览器，链接已复制')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('无法打开浏览器，链接已复制')));
     }
   }
 

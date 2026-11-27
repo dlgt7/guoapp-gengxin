@@ -103,9 +103,8 @@ class _PortraitPlayerPageState extends State<PortraitPlayerPage>
     _idleTimer?.cancel();
     if (_immersive) {
       unawaited(
-        SystemChrome.setEnabledSystemUIMode(
-          SystemUiMode.edgeToEdge,
-        ).catchError((Object _) {}),
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge)
+            .catchError((Object _) {}),
       );
     }
     _pages.dispose();
@@ -476,9 +475,8 @@ class _PortraitPlayerPageState extends State<PortraitPlayerPage>
 
   void _saveFailed() {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
   }
 
   @override

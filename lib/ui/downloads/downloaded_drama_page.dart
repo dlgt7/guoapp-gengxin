@@ -225,9 +225,9 @@ class _DownloadedDramaPageState extends State<DownloadedDramaPage> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: Listenable.merge([widget.store, widget.downloads, _updater]),
     builder: (context, _) {
-      final item = downloadedDramas(
-        widget.downloads.jobs,
-      ).where((entry) => entry.drama.id == widget.drama.id).firstOrNull;
+      final item = downloadedDramas(widget.downloads.jobs)
+          .where((entry) => entry.drama.id == widget.drama.id)
+          .firstOrNull;
       final selection = item == null
           ? null
           : _selection?.intersection({for (final job in item.episodes) job.id});

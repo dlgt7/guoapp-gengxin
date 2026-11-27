@@ -166,9 +166,8 @@ class PullRefreshState extends State<PullRefresh>
           opacity: _refreshing ? 1 : (pulled * 1.5).clamp(0, 1),
           child: RefreshProgressIndicator(
             value: _refreshing ? null : pulled.clamp(0, 1) * .75,
-            semanticsLabel: MaterialLocalizations.of(
-              context,
-            ).refreshIndicatorSemanticLabel,
+            semanticsLabel: MaterialLocalizations.of(context)
+                .refreshIndicatorSemanticLabel,
           ),
         ),
       ),

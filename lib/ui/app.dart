@@ -214,9 +214,9 @@ class _DuanjuAppState extends State<DuanjuApp> with WidgetsBindingObserver {
       const intent = DismissIntent();
       final action = Actions.maybeFind<DismissIntent>(context, intent: intent);
       if (action != null &&
-          Actions.of(
-            context,
-          ).invokeActionIfEnabled(action, intent, context).$1) {
+          Actions.of(context)
+              .invokeActionIfEnabled(action, intent, context)
+              .$1) {
         return true;
       }
       final navigator = Navigator.maybeOf(context);

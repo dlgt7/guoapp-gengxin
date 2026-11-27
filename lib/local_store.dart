@@ -541,9 +541,10 @@ class LocalStore extends ChangeNotifier {
 
   List<String> get recentSearches {
     if (locked) return const [];
-    return _list(
-      _userSettings['recentSearches'],
-    ).whereType<String>().take(20).toList();
+    return _list(_userSettings['recentSearches'])
+        .whereType<String>()
+        .take(20)
+        .toList();
   }
 
   Future<void> _saveSettings(Map<String, Object?> settings) async {
@@ -1305,9 +1306,8 @@ class LocalStore extends ChangeNotifier {
         if (_configurationError == null) throw StateError('请从设置中恢复备份');
         final data = validateBackup(content);
         final originalAdmin = await _originalAdmin();
-        final backupAdmin = _readProfiles(
-          data['profiles'],
-        ).firstWhere((profile) => profile.admin);
+        final backupAdmin = _readProfiles(data['profiles'])
+            .firstWhere((profile) => profile.admin);
         final verifier = originalAdmin?.protected == true
             ? originalAdmin!
             : backupAdmin;
