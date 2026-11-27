@@ -14,7 +14,7 @@ env:
   GOSUMDB: sum.golang.org
   UPDATE_SERVER_URL: ${{ vars.UPDATE_SERVER_URL }}
   PACKAGE_NAME: ${{ vars.PACKAGE_NAME }}
-  BUNDLED_MODULES: bundled-modules/hongguo
+  BUNDLED_MODULES: ''
   PYTHONUTF8: '1'
   PROJECT_URL: ${{ vars.PROJECT_URL }}
   TELEGRAM_GROUP_URL: ${{ vars.TELEGRAM_GROUP_URL }}
@@ -87,10 +87,6 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: guoapp-modules/hongguo
-          path: bundled-modules/hongguo
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -178,7 +174,7 @@ jobs:
         run: |
           set -euo pipefail
           cat > notes.md <<EOF
-          版本 ${VERSION}。安装包内置红果站源，其余站源在 设置 › 站源 › 模块管理 的模块商店安装。
+          版本 ${VERSION}。所有站源在 设置 › 站源 › 模块管理 的模块商店安装，或用 zip 手动安装。
 
           Android：
           - *-arm64-v8a.apk：适用于较新的安卓设备
