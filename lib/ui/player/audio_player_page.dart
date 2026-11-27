@@ -112,8 +112,9 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
 
   void _saveFailed() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
   }
 
   Future<void> _change(Future<void> Function() change) async {
@@ -247,13 +248,13 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
   }
 
   Future<void> _switchSeason(DramaSeason season) async {
-    if (_session.switchingSeason ||
-        season.drama.id == _session.detail.drama.id) {
+    if (_session.switchingSeason || season.drama.id == _session.detail.drama.id) {
       return;
     }
     if (!await _session.playSeason(season) && mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${season.label}切换失败，请稍后重试')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${season.label}切换失败，请稍后重试')));
     }
   }
 
@@ -604,8 +605,9 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
                     inset: 12,
                     onSelectionChanged: () {},
                     onPick: (index) {
-                      if (index != session.index)
+                      if (index != session.index) {
                         unawaited(session.play(index));
+                      }
                     },
                   ),
                 ),
@@ -802,8 +804,15 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
         builder: (context) => _progress(),
       ),
       const SizedBox(height: 14),
-      _transport(wide: wide, hasSidebar: hasSidebar, sidebarOpen: sidebarOpen),
-      if (wide && !_touch) ...[const SizedBox(height: 14), _volumeBar()],
+      _transport(
+        wide: wide,
+        hasSidebar: hasSidebar,
+        sidebarOpen: sidebarOpen,
+      ),
+      if (wide && !_touch) ...[
+        const SizedBox(height: 14),
+        _volumeBar(),
+      ],
       const SizedBox(height: 16),
       _actions(wide: wide),
     ],
@@ -1076,7 +1085,9 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
           color: sidebarOpen
               ? Theme.of(context).colorScheme.primary
               : Colors.white,
-          tooltip: hasSidebar ? (sidebarOpen ? '收起选集' : '展开选集') : '选集',
+          tooltip: hasSidebar
+              ? (sidebarOpen ? '收起选集' : '展开选集')
+              : '选集',
         ),
       ],
     );
