@@ -85,8 +85,9 @@ Future<T?> showChoicePanel<T>({
       return showGeneralDialog<T>(
         context: context,
         barrierDismissible: true,
-        barrierLabel: MaterialLocalizations.of(context)
-            .modalBarrierDismissLabel,
+        barrierLabel: MaterialLocalizations.of(
+          context,
+        ).modalBarrierDismissLabel,
         barrierColor: Colors.black54,
         transitionDuration: const Duration(milliseconds: 220),
         pageBuilder: (context, _, _) => Align(

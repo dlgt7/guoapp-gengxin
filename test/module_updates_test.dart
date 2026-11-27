@@ -71,8 +71,9 @@ void main() {
   test('ignored versions persist independently of other preferences', () async {
     SharedPreferences.setMockInitialValues({'existing': 'preserved'});
     final preferences = await SharedPreferences.getInstance();
-    await ModuleUpdatePreferences(preferences)
-        .ignore([ModuleUpdate(installed, entry('1.0.1'))]);
+    await ModuleUpdatePreferences(
+      preferences,
+    ).ignore([ModuleUpdate(installed, entry('1.0.1'))]);
     expect(ModuleUpdatePreferences(preferences).ignored, {'example': '1.0.1'});
     expect(preferences.getString('existing'), 'preserved');
     await ModuleUpdatePreferences(preferences).ignore([

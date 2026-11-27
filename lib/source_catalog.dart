@@ -42,10 +42,9 @@ class SourceCatalog {
     );
     final local = topics
         ? const <String>[]
-        : ({for (final drama in _library.values) categoryName(drama.category)}
-              .where(names.add)
-              .toList()
-            ..sort());
+        : ({
+            for (final drama in _library.values) categoryName(drama.category),
+          }.where(names.add).toList()..sort());
     return [
       CatalogCategory.all,
       ...remote,
