@@ -305,8 +305,9 @@ void main() {
       final root = store.files.root;
 
       Directory('${root.path}.new').createSync();
-      File(path.join('${root.path}.new', 'users', 'default', 'history.json'))
-          .createSync(recursive: true);
+      File(
+        path.join('${root.path}.new', 'users', 'default', 'history.json'),
+      ).createSync(recursive: true);
       expect((await restartStore(store)).favorites.single.id, first.id);
       expect(Directory('${root.path}.new').existsSync(), isFalse);
 
@@ -440,10 +441,10 @@ void main() {
       () async {
         installSourceFixture();
         final store = await _open();
-        final original = [for (final site in SourceSite.values) site.id];
+        final original = [for (final site in SourceSite.allValues) site.id];
         await store.setSourceOrder(['guipian', 'hongguo']);
         expect(
-          [for (final site in SourceSite.values) site.id],
+          [for (final site in SourceSite.allValues) site.id],
           [
             'guipian',
             'hongguo',
@@ -460,7 +461,7 @@ void main() {
 
         final restarted = await restartStore(store);
         expect(restarted.sourceOrder, ['hongguo', 'guipian']);
-        expect(SourceSite.values.take(2).map((site) => site.id), [
+        expect(SourceSite.allValues.take(2).map((site) => site.id), [
           'hongguo',
           'guipian',
         ]);
@@ -469,11 +470,13 @@ void main() {
 
     test('the backed up module list is offered once after a restore', () async {
       final store = await _open();
-      final backup = jsonDecode(
-        await store.exportBackup(
-          modules: const ['hongguo', '../x', 'hongguo', 'guipian'],
-        ),
-      ) as Map;
+      final backup =
+          jsonDecode(
+                await store.exportBackup(
+                  modules: const ['hongguo', '../x', 'hongguo', 'guipian'],
+                ),
+              )
+              as Map;
       expect(backup['modules'], ['hongguo', 'guipian']);
       expect(store.takeRestoredModules(), isEmpty);
 
