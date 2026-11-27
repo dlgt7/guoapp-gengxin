@@ -204,8 +204,9 @@ class _SettingsPageState extends State<SettingsPage> {
   FocusNode? _detailTarget({required bool resume}) {
     final last = _detailScope.focusedChild;
     if (resume && last != null && last.canRequestFocus) return last;
-    final first = FocusTraversalGroup.of(context)
-        .findFirstFocus(_detailScope, ignoreCurrentFocus: true);
+    final first = FocusTraversalGroup.of(
+      context,
+    ).findFirstFocus(_detailScope, ignoreCurrentFocus: true);
     return first == _detailScope ? null : first;
   }
 
@@ -350,8 +351,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   padding: EdgeInsets.only(left: television ? 8 : 0),
                   child: Text(
                     '设置',
-                    style: Theme.of(context).textTheme.headlineSmall
-                        ?.copyWith(fontSize: 22, fontWeight: FontWeight.w800),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ],
@@ -360,8 +363,9 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         Expanded(
           child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context)
-                .copyWith(scrollbars: false),
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
             child: ListView(
               padding: television
                   ? const EdgeInsets.fromLTRB(televisionInset, 4, 16, 27)
@@ -534,8 +538,10 @@ class _DetailHeader extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleLarge
-                    ?.copyWith(fontSize: 22, fontWeight: FontWeight.w700),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

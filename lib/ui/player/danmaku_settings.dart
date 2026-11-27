@@ -274,8 +274,9 @@ class DanmakuSettings extends StatelessWidget {
     padding: EdgeInsets.fromLTRB(0, dense ? 18 : 24, 0, 8),
     child: Text(
       title,
-      style: Theme.of(context).textTheme.titleSmall
-          ?.copyWith(fontWeight: FontWeight.w700),
+      style: Theme.of(
+        context,
+      ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
     ),
   );
 }

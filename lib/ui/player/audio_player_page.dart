@@ -248,7 +248,8 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
   }
 
   Future<void> _switchSeason(DramaSeason season) async {
-    if (_session.switchingSeason || season.drama.id == _session.detail.drama.id) {
+    if (_session.switchingSeason ||
+        season.drama.id == _session.detail.drama.id) {
       return;
     }
     if (!await _session.playSeason(season) && mounted) {
@@ -804,15 +805,8 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
         builder: (context) => _progress(),
       ),
       const SizedBox(height: 14),
-      _transport(
-        wide: wide,
-        hasSidebar: hasSidebar,
-        sidebarOpen: sidebarOpen,
-      ),
-      if (wide && !_touch) ...[
-        const SizedBox(height: 14),
-        _volumeBar(),
-      ],
+      _transport(wide: wide, hasSidebar: hasSidebar, sidebarOpen: sidebarOpen),
+      if (wide && !_touch) ...[const SizedBox(height: 14), _volumeBar()],
       const SizedBox(height: 16),
       _actions(wide: wide),
     ],
@@ -1085,9 +1079,7 @@ class _AudioPlayerPageState extends State<AudioPlayerPage>
           color: sidebarOpen
               ? Theme.of(context).colorScheme.primary
               : Colors.white,
-          tooltip: hasSidebar
-              ? (sidebarOpen ? '收起选集' : '展开选集')
-              : '选集',
+          tooltip: hasSidebar ? (sidebarOpen ? '收起选集' : '展开选集') : '选集',
         ),
       ],
     );

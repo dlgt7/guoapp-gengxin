@@ -423,8 +423,9 @@ class _SourceCheck extends StatelessWidget {
                     name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyLarge
-                        ?.copyWith(fontSize: 15),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(fontSize: 15),
                   ),
                 ),
               ],

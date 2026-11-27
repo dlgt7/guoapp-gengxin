@@ -15,10 +15,8 @@ import 'models.dart';
 
 enum MergeState { queued, running, done, failed, cancelled }
 
-typedef MergeSave = Future<String> Function(
-  DownloadMerge merge,
-  MergeTask task,
-);
+typedef MergeSave =
+    Future<String> Function(DownloadMerge merge, MergeTask task);
 
 class MergeTask {
   MergeTask._(this.id, List<DownloadJob> jobs, this.file)

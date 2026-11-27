@@ -329,8 +329,9 @@ class _PlayerSurfaceState extends State<PlayerSurface> {
       await change();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('播放偏好未能保存，请重试')));
     }
   }
 

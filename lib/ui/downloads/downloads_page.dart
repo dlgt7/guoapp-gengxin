@@ -95,9 +95,9 @@ class _DownloadsPageState extends State<DownloadsPage>
   }
 
   void _control(DownloadJob job) => _run(
-    () =>
-        AppScope.of(context).repository
-            .controlDownloads(job.active ? 'pause' : 'resume', id: job.id),
+    () => AppScope.of(
+      context,
+    ).repository.controlDownloads(job.active ? 'pause' : 'resume', id: job.id),
   );
 
   void _controlAll(String command, List<DownloadJob> jobs) => _run(() async {
